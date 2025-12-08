@@ -1,0 +1,56 @@
+# Production Profile Configuration
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/opsfinder}
+    username: ${DB_USER:opsuser}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+  liquibase:
+    contexts: prod
+
+# JWT - Must use secure secret in production
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000  # 24 hours
+  refresh-expiration: 604800000  # 7 days
+
+# Logging - Less verbose in production
+logging:
+  level:
+    com.igsl.opsfinder: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+  file:
+    name: logs/opsfinder.log
+    max-size: 10MB
+    max-history: 30
+
+# Server
+server:
+  port: ${PORT:8080}
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+  error:
+    include-message: never
+    include-stacktrace: never
+
+# CORS - Restricted in production
+cors:
+  allowed-origins: ${ALLOWED_ORIGINS:https://opsfinder.example.com}
+  allowed-methods: GET,POST,PUT,DELETE
+  allowed-headers: Authorization,Content-Type
+  allow-credentials: true

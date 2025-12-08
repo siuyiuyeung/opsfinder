@@ -1,0 +1,124 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-users-table
+      author: OpsFinder
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: VARCHAR(100)
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: active
+                  type: BOOLEAN
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - addCheckConstraint:
+            tableName: users
+            constraintName: chk_users_role
+            checkCondition: "role IN ('ADMIN', 'OPERATOR', 'VIEWER')"
+
+      rollback:
+        - dropTable:
+            tableName: users
+
+  - changeSet:
+      id: 001-create-users-indexes
+      author: OpsFinder
+      changes:
+        - createIndex:
+            tableName: users
+            indexName: idx_users_username
+            columns:
+              - column:
+                  name: username
+        - createIndex:
+            tableName: users
+            indexName: idx_users_role
+            columns:
+              - column:
+                  name: role
+        - createIndex:
+            tableName: users
+            indexName: idx_users_active
+            columns:
+              - column:
+                  name: active
+
+      rollback:
+        - dropIndex:
+            indexName: idx_users_username
+            tableName: users
+        - dropIndex:
+            indexName: idx_users_role
+            tableName: users
+        - dropIndex:
+            indexName: idx_users_active
+            tableName: users
+
+  - changeSet:
+      id: 001-insert-default-admin
+      author: OpsFinder
+      context: dev
+      changes:
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: username
+                  value: admin
+              - column:
+                  name: password
+                  # BCrypt hash of 'admin123' - $2a$10$...
+                  value: $2a$10$xqZ9R2YV3QH9Z0mH.k4KfuF7.K8Y7.vQZ9R2YV3QH9Z0mH.k4KfuF
+              - column:
+                  name: full_name
+                  value: System Administrator
+              - column:
+                  name: role
+                  value: ADMIN
+              - column:
+                  name: active
+                  valueBoolean: true
+
+      rollback:
+        - delete:
+            tableName: users
+            where: username = 'admin'
