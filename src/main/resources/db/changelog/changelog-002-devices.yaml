@@ -1,0 +1,223 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-devices-table
+      author: claude
+      changes:
+        - createTable:
+            tableName: devices
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: zone
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: username
+                  type: VARCHAR(100)
+              - column:
+                  name: type
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: remark
+                  type: VARCHAR(500)
+              - column:
+                  name: location
+                  type: VARCHAR(200)
+              - column:
+                  name: ip
+                  type: VARCHAR(45)
+              - column:
+                  name: hostname
+                  type: VARCHAR(255)
+              - column:
+                  name: hardware_model
+                  type: VARCHAR(200)
+              - column:
+                  name: datacenter
+                  type: VARCHAR(100)
+              - column:
+                  name: account_type
+                  type: VARCHAR(100)
+              - column:
+                  name: password_index
+                  type: VARCHAR(100)
+              - column:
+                  name: search_vector
+                  type: tsvector
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: idx_devices_zone
+            tableName: devices
+            columns:
+              - column:
+                  name: zone
+
+        - createIndex:
+            indexName: idx_devices_type
+            tableName: devices
+            columns:
+              - column:
+                  name: type
+
+        - createIndex:
+            indexName: idx_devices_ip
+            tableName: devices
+            columns:
+              - column:
+                  name: ip
+
+        - sql:
+            sql: CREATE INDEX idx_devices_search ON devices USING GIN(search_vector);
+
+        - sql:
+            sql: |
+              CREATE TRIGGER devices_search_vector_update BEFORE INSERT OR UPDATE
+              ON devices FOR EACH ROW EXECUTE FUNCTION
+              tsvector_update_trigger(search_vector, 'pg_catalog.english',
+                  zone, username, type, remark, location, ip, hostname,
+                  hardware_model, datacenter, account_type, password_index);
+
+      rollback:
+        - dropTable:
+            tableName: devices
+
+  - changeSet:
+      id: 002-insert-sample-devices
+      author: claude
+      context: dev
+      changes:
+        - insert:
+            tableName: devices
+            columns:
+              - column:
+                  name: zone
+                  value: "Production-East"
+              - column:
+                  name: username
+                  value: "admin"
+              - column:
+                  name: type
+                  value: "VM"
+              - column:
+                  name: remark
+                  value: "Main application server"
+              - column:
+                  name: location
+                  value: "Rack A1"
+              - column:
+                  name: ip
+                  value: "192.168.1.100"
+              - column:
+                  name: hostname
+                  value: "app-server-01"
+              - column:
+                  name: hardware_model
+                  value: "Dell PowerEdge R740"
+              - column:
+                  name: datacenter
+                  value: "DC-East-01"
+              - column:
+                  name: account_type
+                  value: "Service Account"
+              - column:
+                  name: password_index
+                  value: "PWD-001"
+
+        - insert:
+            tableName: devices
+            columns:
+              - column:
+                  name: zone
+                  value: "Production-West"
+              - column:
+                  name: username
+                  value: "dbadmin"
+              - column:
+                  name: type
+                  value: "Database"
+              - column:
+                  name: remark
+                  value: "PostgreSQL primary database"
+              - column:
+                  name: location
+                  value: "Rack B2"
+              - column:
+                  name: ip
+                  value: "192.168.2.50"
+              - column:
+                  name: hostname
+                  value: "db-primary-01"
+              - column:
+                  name: hardware_model
+                  value: "HP ProLiant DL380"
+              - column:
+                  name: datacenter
+                  value: "DC-West-01"
+              - column:
+                  name: account_type
+                  value: "Database Admin"
+              - column:
+                  name: password_index
+                  value: "PWD-DB-001"
+
+        - insert:
+            tableName: devices
+            columns:
+              - column:
+                  name: zone
+                  value: "Development"
+              - column:
+                  name: username
+                  value: "devuser"
+              - column:
+                  name: type
+                  value: "VM"
+              - column:
+                  name: remark
+                  value: "Development environment server"
+              - column:
+                  name: location
+                  value: "Cloud"
+              - column:
+                  name: ip
+                  value: "10.0.1.25"
+              - column:
+                  name: hostname
+                  value: "dev-server-01"
+              - column:
+                  name: hardware_model
+                  value: "Virtual Machine"
+              - column:
+                  name: datacenter
+                  value: "AWS-US-East-1"
+              - column:
+                  name: account_type
+                  value: "Developer"
+              - column:
+                  name: password_index
+                  value: "PWD-DEV-001"
+
+      rollback:
+        - delete:
+            tableName: devices
