@@ -14,10 +14,16 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - ./logs/database:/var/log/opsfinder/database
     ports:
       - "5432:5432"
     networks:
       - opsfinder-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-opsuser} -d ${DB_NAME:-opsfinder}"]
       interval: 10s
@@ -46,10 +52,17 @@ services:
       LOGGING_LEVEL_ROOT: ${LOG_LEVEL:-INFO}
       LOGGING_LEVEL_COM_IGSL_OPSFINDER: ${APP_LOG_LEVEL:-DEBUG}
       JAVA_OPTS: "-Xms512m -Xmx1024m"
+    volumes:
+      - ./logs/backend:/var/log/opsfinder/backend
     ports:
       - "8080:8080"
     networks:
       - opsfinder-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -67,10 +80,17 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    volumes:
+      - ./logs/frontend:/var/log/opsfinder/frontend
     ports:
       - "${FRONTEND_PORT:-80}:80"
     networks:
       - opsfinder-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
       interval: 30s

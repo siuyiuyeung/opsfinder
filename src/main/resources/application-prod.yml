@@ -30,14 +30,21 @@ jwt:
 # Logging - Less verbose in production
 logging:
   level:
-    com.igsl.opsfinder: INFO
+    com.igsl.opsfinder: ${LOGGING_LEVEL_COM_IGSL_OPSFINDER:INFO}
     org.springframework.security: WARN
     org.springframework.web: WARN
     org.hibernate.SQL: WARN
   file:
-    name: logs/opsfinder.log
-    max-size: 10MB
-    max-history: 30
+    name: /var/log/opsfinder/backend/opsfinder.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+      total-size-cap: 3GB
+      file-name-pattern: /var/log/opsfinder/backend/opsfinder-%d{yyyy-MM-dd}.%i.log
 
 # Server
 server:

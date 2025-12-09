@@ -308,6 +308,28 @@ sudo lsof -i :80
 # Kill process or change FRONTEND_PORT in .env
 ```
 
+### Log Issues
+
+```bash
+# Logs not appearing in logs/ directory
+# Check volume mounts
+docker-compose config | grep -A 5 volumes
+
+# Ensure log directories exist with correct permissions
+mkdir -p logs/backend logs/frontend logs/database
+chmod -R 755 logs
+
+# Check if backend is writing logs
+docker exec opsfinder-backend ls -la /var/log/opsfinder/backend/
+
+# Check nginx log configuration
+docker exec opsfinder-frontend nginx -T | grep log
+
+# Disk full - clean old logs
+du -sh logs/*
+find logs -name "*.gz" -mtime +60 -delete
+```
+
 ## Performance Tuning
 
 ### Java Heap Size
@@ -354,17 +376,76 @@ docker exec opsfinder-db pg_dump -U opsuser opsfinder | gzip > /backups/opsfinde
 find /backups -name "opsfinder_*.sql.gz" -mtime +30 -delete
 ```
 
-### Log Rotation
+### Log Management
 
-Docker handles log rotation automatically. Configure in `/etc/docker/daemon.json`:
-```json
-{
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "10m",
-    "max-file": "3"
-  }
-}
+**Log Locations** (mounted outside containers):
+- **Backend**: `logs/backend/opsfinder.log`
+- **Frontend**: `logs/frontend/access.log`, `logs/frontend/error.log`
+- **Database**: `logs/database/` (PostgreSQL logs)
+- **Docker**: Docker JSON logs (max 10MB, 3 files per container)
+
+**View Application Logs**:
+```bash
+# Backend application logs
+tail -f logs/backend/opsfinder.log
+
+# Frontend access logs
+tail -f logs/frontend/access.log
+
+# Frontend error logs
+tail -f logs/frontend/error.log
+
+# All Docker container logs
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f backend
+```
+
+**Log Rotation Setup**:
+
+Install logrotate for automatic log management:
+```bash
+# Run the setup script as root
+sudo ./setup-logrotate.sh
+```
+
+This installs:
+- Daily rotation for all log files
+- 30 days retention
+- Compression after 1 day
+- Maximum file sizes (100MB backend/database, 50MB frontend)
+
+**Manual Log Rotation**:
+```bash
+# Rotate backend logs
+sudo logrotate -f /etc/logrotate.d/opsfinder-backend
+
+# Rotate frontend logs
+sudo logrotate -f /etc/logrotate.d/opsfinder-frontend
+
+# Rotate database logs
+sudo logrotate -f /etc/logrotate.d/opsfinder-database
+```
+
+**Docker Container Log Rotation**:
+
+Docker automatically rotates container logs. Configuration in `docker-compose.yml`:
+```yaml
+logging:
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+```
+
+**Clean Old Logs**:
+```bash
+# Remove logs older than 30 days
+find logs -name "*.log.*" -mtime +30 -delete
+
+# Remove compressed logs older than 60 days
+find logs -name "*.gz" -mtime +60 -delete
 ```
 
 ## Uninstall

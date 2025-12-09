@@ -36,6 +36,11 @@ fi
 
 echo "Environment variables loaded successfully"
 
+# Create log directories if they don't exist
+echo "Creating log directories..."
+mkdir -p logs/database logs/backend logs/frontend
+chmod -R 755 logs
+
 # Stop existing containers
 echo "Stopping existing containers..."
 docker-compose down
@@ -69,7 +74,16 @@ echo "==================================="
 echo "Frontend URL: http://localhost:${FRONTEND_PORT:-80}"
 echo "Backend API: http://localhost:8080/api"
 echo ""
-echo "To view logs: docker-compose logs -f"
+echo "Log Files:"
+echo "  Database: logs/database/"
+echo "  Backend:  logs/backend/"
+echo "  Frontend: logs/frontend/"
+echo ""
+echo "To view logs:"
+echo "  Docker logs:   docker-compose logs -f"
+echo "  Application logs: tail -f logs/backend/opsfinder.log"
+echo "  Nginx access:  tail -f logs/frontend/access.log"
+echo ""
 echo "To stop: docker-compose down"
 echo "To restart: docker-compose restart"
 echo "==================================="
