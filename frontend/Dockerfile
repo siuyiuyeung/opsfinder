@@ -1,6 +1,9 @@
 # Multi-stage build for Vue.js application
 FROM node:20-alpine AS build
 
+# Build argument for API URL
+ARG VITE_API_BASE_URL=http://localhost:8080/api
+
 WORKDIR /app
 
 # Copy package files
@@ -12,7 +15,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build production app
+# Build production app with API URL
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 RUN npm run build
 
 # Production stage with Nginx

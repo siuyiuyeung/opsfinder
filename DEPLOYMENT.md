@@ -70,6 +70,27 @@ openssl rand -base64 24
 openssl rand -base64 48
 ```
 
+**Frontend API Configuration:**
+
+The frontend needs to know the backend API URL. Configure `VITE_API_BASE_URL` in `.env`:
+
+```bash
+# For Docker deployment (default - frontend connects to backend service)
+VITE_API_BASE_URL=http://backend:8080/api
+
+# For production with reverse proxy / load balancer
+VITE_API_BASE_URL=https://api.your-domain.com/api
+
+# For external backend on different server
+VITE_API_BASE_URL=http://192.168.1.100:8080/api
+```
+
+**Important Notes:**
+- Default value (`http://backend:8080/api`) works for standard Docker deployment
+- For production with domain name, use HTTPS URL
+- For Windows development, see [WINDOWS_FRONTEND_BUILD.md](WINDOWS_FRONTEND_BUILD.md)
+- Frontend is built at Docker build time with this URL baked in
+
 ### 4. Deploy Application
 
 **Option A: Complete Deployment (Recommended for first-time setup)**

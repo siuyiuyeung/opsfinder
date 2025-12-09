@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
+const drawer = ref(false)
 const authStore = useAuthStore()
 const router = useRouter()
 
@@ -50,11 +52,3 @@ const navigationItems = [
     </v-main>
   </v-app>
 </template>
-
-<script>
-export default {
-  data: () => ({
-    drawer: false,
-  }),
-}
-</script>
