@@ -10,7 +10,8 @@ services:
     restart: unless-stopped
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/${DB_NAME:-opsfinder}
+      # If DB_HOST is set, use external database, otherwise use local 'database' service
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST:-database}:${DB_PORT:-5432}/${DB_NAME:-opsfinder}
       SPRING_DATASOURCE_USERNAME: ${DB_USER:-opsuser}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:?Database password required}
       JWT_SECRET: ${JWT_SECRET:?JWT secret required}

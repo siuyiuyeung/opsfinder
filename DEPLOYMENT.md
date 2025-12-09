@@ -197,6 +197,24 @@ docker-compose up -d --build
 ./deploy.sh
 ```
 
+### Using External Database
+
+OpsFinder supports external PostgreSQL databases (AWS RDS, Azure Database, etc.):
+
+```bash
+# Configure .env
+DB_HOST=your-external-db-host.com
+DB_PORT=5432
+DB_NAME=opsfinder
+DB_USER=your_user
+DB_PASSWORD=your_password
+
+# Deploy (automatically skips local database)
+./deploy.sh
+```
+
+For comprehensive external database setup, see [EXTERNAL_DATABASE.md](EXTERNAL_DATABASE.md)
+
 ### Database Backup
 
 ```bash

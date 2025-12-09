@@ -41,18 +41,47 @@ echo "Creating log directories..."
 mkdir -p logs/backend logs/frontend
 chmod -R 755 logs
 
-# Check if network exists
-if ! docker network inspect opsfinder-network >/dev/null 2>&1; then
-    echo "ERROR: Docker network 'opsfinder-network' not found!"
-    echo "Please deploy the database first: ./deploy-db.sh"
-    exit 1
+# Check for external database configuration
+if [ ! -z "$DB_HOST" ]; then
+    echo ""
+    echo "==================================="
+    echo "External Database Configuration"
+    echo "==================================="
+    echo "Database Host: $DB_HOST"
+    echo "Database Port: ${DB_PORT:-5432}"
+    echo "Database Name: ${DB_NAME:-opsfinder}"
+    echo "Database User: ${DB_USER:-opsuser}"
+    echo ""
+    echo "Using external database - local database checks skipped"
+    echo ""
+
+    USE_EXTERNAL_DB=true
+else
+    echo ""
+    echo "Using local Docker database"
+    echo ""
+
+    USE_EXTERNAL_DB=false
+
+    # Check if network exists
+    if ! docker network inspect opsfinder-network >/dev/null 2>&1; then
+        echo "ERROR: Docker network 'opsfinder-network' not found!"
+        echo "Please deploy the database first: ./deploy-db.sh"
+        exit 1
+    fi
+
+    # Check if database is running
+    if ! docker ps | grep -q opsfinder-db; then
+        echo "WARNING: Database container is not running!"
+        echo "Please start the database first: ./deploy-db.sh"
+        exit 1
+    fi
 fi
 
-# Check if database is running
-if ! docker ps | grep -q opsfinder-db; then
-    echo "WARNING: Database container is not running!"
-    echo "Please start the database first: ./deploy-db.sh"
-    exit 1
+# Ensure network exists (create if needed for external DB)
+if [ "$USE_EXTERNAL_DB" = true ]; then
+    echo "Creating Docker network..."
+    docker network create opsfinder-network 2>/dev/null || echo "Network already exists"
 fi
 
 # Stop existing application containers
@@ -87,6 +116,13 @@ echo "Application Deployment Complete!"
 echo "==================================="
 echo "Frontend URL: http://localhost:${FRONTEND_PORT:-80}"
 echo "Backend API: http://localhost:8080/api"
+
+if [ "$USE_EXTERNAL_DB" = true ]; then
+    echo "Database: $DB_HOST:${DB_PORT:-5432} (${DB_NAME:-opsfinder}) [EXTERNAL]"
+else
+    echo "Database: localhost:5432 (${DB_NAME:-opsfinder}) [LOCAL DOCKER]"
+fi
+
 echo ""
 echo "Log Files:"
 echo "  Backend:  logs/backend/"
