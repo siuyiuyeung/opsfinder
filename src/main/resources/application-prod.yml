@@ -1,9 +1,9 @@
 # Production Profile Configuration
 spring:
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/opsfinder}
-    username: ${DB_USER:opsuser}
-    password: ${DB_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://database:5432/opsfinder}
+    username: ${SPRING_DATASOURCE_USERNAME:opsuser}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -19,6 +19,7 @@ spring:
 
   liquibase:
     contexts: prod
+    enabled: true
 
 # JWT - Must use secure secret in production
 jwt:

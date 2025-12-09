@@ -1,0 +1,395 @@
+# OpsFinder Production Deployment Guide
+
+Complete guide for deploying OpsFinder to a Linux VM using Docker.
+
+## Prerequisites
+
+- Linux VM (Ubuntu 20.04+ recommended)
+- Docker Engine 20.10+
+- Docker Compose 2.0+
+- At least 2GB RAM, 20GB disk space
+- Open ports: 80 (frontend), 8080 (backend), 5432 (database)
+
+## Quick Start
+
+### 1. Install Docker and Docker Compose
+
+```bash
+# Update package index
+sudo apt-get update
+
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+# Add your user to docker group
+sudo usermod -aG docker $USER
+
+# Install Docker Compose
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# Verify installation
+docker --version
+docker-compose --version
+
+# Log out and back in for group changes to take effect
+```
+
+### 2. Clone or Upload Project
+
+```bash
+# Option A: Clone from repository
+git clone <your-repo-url> opsfinder
+cd opsfinder
+
+# Option B: Upload via SCP
+scp -r /path/to/OpsFinder user@your-vm:/home/user/opsfinder
+ssh user@your-vm
+cd opsfinder
+```
+
+### 3. Configure Environment
+
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit configuration
+nano .env
+```
+
+**IMPORTANT:** Update these values in `.env`:
+- `DB_PASSWORD`: Strong database password (min 16 characters)
+- `JWT_SECRET`: Secure random string (min 32 characters, use `openssl rand -base64 32`)
+
+Example secure values:
+```bash
+# Generate secure password
+openssl rand -base64 24
+
+# Generate JWT secret
+openssl rand -base64 48
+```
+
+### 4. Deploy Application
+
+```bash
+# Make deploy script executable
+chmod +x deploy.sh
+
+# Run deployment
+./deploy.sh
+```
+
+The script will:
+1. Validate environment configuration
+2. Stop existing containers
+3. Build Docker images
+4. Start all services (database, backend, frontend)
+5. Display service status and logs
+
+### 5. Access Application
+
+- **Frontend**: http://your-vm-ip:80
+- **Backend API**: http://your-vm-ip:8080/api
+- **Health Check**: http://your-vm-ip:8080/actuator/health
+
+**Default Admin User** (dev context):
+- Username: `admin`
+- Password: `admin123`
+
+⚠️ **IMPORTANT**: Change the default admin password immediately after first login!
+
+## Docker Architecture
+
+### Services
+
+1. **database** (postgres:15-alpine)
+   - Port: 5432
+   - Volume: postgres_data
+   - Health checks enabled
+
+2. **backend** (Spring Boot 4.0 + Java 21)
+   - Port: 8080
+   - Connects to database service
+   - Auto-runs Liquibase migrations
+   - Health checks via /actuator/health
+
+3. **frontend** (Vue 3 + Nginx)
+   - Port: 80
+   - Proxies API requests to backend
+   - SPA with client-side routing
+
+### Volumes
+
+- `postgres_data`: Persistent database storage
+
+### Network
+
+- `opsfinder-network`: Bridge network for internal communication
+
+## Common Operations
+
+### View Logs
+
+```bash
+# All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f backend
+docker-compose logs -f frontend
+docker-compose logs -f database
+
+# Last 100 lines
+docker-compose logs --tail=100
+```
+
+### Restart Services
+
+```bash
+# Restart all
+docker-compose restart
+
+# Restart specific service
+docker-compose restart backend
+```
+
+### Stop Application
+
+```bash
+# Stop but keep data
+docker-compose down
+
+# Stop and remove volumes (WARNING: deletes database!)
+docker-compose down -v
+```
+
+### Update Application
+
+```bash
+# Pull latest code
+git pull
+
+# Rebuild and restart
+docker-compose up -d --build
+
+# Or use deploy script
+./deploy.sh
+```
+
+### Database Backup
+
+```bash
+# Create backup
+docker exec opsfinder-db pg_dump -U opsuser opsfinder > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Restore backup
+docker exec -i opsfinder-db psql -U opsuser opsfinder < backup_20231201_120000.sql
+```
+
+### Scale Backend (if needed)
+
+```bash
+# Run multiple backend instances
+docker-compose up -d --scale backend=3
+```
+
+## Security Hardening
+
+### 1. Firewall Configuration
+
+```bash
+# Allow only necessary ports
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw allow 22/tcp
+sudo ufw enable
+```
+
+### 2. HTTPS with Let's Encrypt (Recommended)
+
+Install Certbot and configure SSL:
+
+```bash
+# Install Certbot
+sudo apt-get install certbot python3-certbot-nginx
+
+# Get certificate (requires domain name)
+sudo certbot --nginx -d your-domain.com
+
+# Update nginx config to use HTTPS
+```
+
+### 3. Regular Updates
+
+```bash
+# Update Docker images
+docker-compose pull
+docker-compose up -d
+
+# Update system packages
+sudo apt-get update && sudo apt-get upgrade
+```
+
+### 4. Change Default Credentials
+
+1. Login as admin
+2. Create new admin user
+3. Delete or disable default admin account
+
+## Monitoring
+
+### Check Service Health
+
+```bash
+# Backend health
+curl http://localhost:8080/actuator/health
+
+# Database connection
+docker exec opsfinder-db pg_isready -U opsuser
+
+# Frontend
+curl http://localhost/
+```
+
+### Resource Usage
+
+```bash
+# Container stats
+docker stats
+
+# Disk usage
+docker system df
+```
+
+## Troubleshooting
+
+### Backend Won't Start
+
+```bash
+# Check logs
+docker-compose logs backend
+
+# Common issues:
+# - Database not ready: Wait 30s and retry
+# - Port conflict: Change port in .env
+# - Memory: Increase JAVA_OPTS in docker-compose.yml
+```
+
+### Database Connection Issues
+
+```bash
+# Test connection
+docker exec -it opsfinder-db psql -U opsuser -d opsfinder
+
+# Reset database (WARNING: deletes all data!)
+docker-compose down -v
+docker-compose up -d database
+```
+
+### Frontend 404 Errors
+
+```bash
+# Rebuild frontend
+docker-compose up -d --build frontend
+
+# Check nginx config
+docker exec opsfinder-frontend cat /etc/nginx/conf.d/default.conf
+```
+
+### Port Already in Use
+
+```bash
+# Find process using port 80
+sudo lsof -i :80
+
+# Kill process or change FRONTEND_PORT in .env
+```
+
+## Performance Tuning
+
+### Java Heap Size
+
+Edit `docker-compose.yml`:
+```yaml
+backend:
+  environment:
+    JAVA_OPTS: "-Xms1g -Xmx2g"  # Adjust based on available RAM
+```
+
+### Database Connection Pool
+
+Edit `application-prod.yml`:
+```yaml
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20  # Increase for high load
+      minimum-idle: 10
+```
+
+### Nginx Worker Processes
+
+Edit `frontend/nginx.conf`:
+```nginx
+worker_processes auto;
+worker_connections 1024;
+```
+
+## Maintenance
+
+### Scheduled Backups
+
+Add to crontab:
+```bash
+# Daily backup at 2 AM
+0 2 * * * /path/to/opsfinder/backup.sh
+
+# Create backup.sh:
+#!/bin/bash
+cd /path/to/opsfinder
+docker exec opsfinder-db pg_dump -U opsuser opsfinder | gzip > /backups/opsfinder_$(date +\%Y\%m\%d).sql.gz
+find /backups -name "opsfinder_*.sql.gz" -mtime +30 -delete
+```
+
+### Log Rotation
+
+Docker handles log rotation automatically. Configure in `/etc/docker/daemon.json`:
+```json
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  }
+}
+```
+
+## Uninstall
+
+```bash
+# Stop and remove containers
+docker-compose down
+
+# Remove volumes (deletes data!)
+docker volume rm opsfinder_postgres_data
+
+# Remove images
+docker rmi opsfinder-backend opsfinder-frontend postgres:15-alpine
+
+# Remove project directory
+cd ..
+rm -rf opsfinder
+```
+
+## Support
+
+- Check logs: `docker-compose logs -f`
+- GitHub Issues: [Your repo issues]
+- Documentation: See IMPLEMENTATION_PLAN.md
+
+## License
+
+[Your License]
