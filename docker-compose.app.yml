@@ -1,36 +1,6 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  database:
-    image: postgres:16-alpine
-    container_name: opsfinder-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${DB_NAME:-opsfinder}
-      POSTGRES_USER: ${DB_USER:-opsuser}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:?Database password required}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
-      - ./logs/database:/var/log/opsfinder/database
-    ports:
-      - "5432:5432"
-    networks:
-      - opsfinder-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-opsuser} -d ${DB_NAME:-opsfinder}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
   # Spring Boot Backend
   backend:
     build:
@@ -38,9 +8,6 @@ services:
       dockerfile: Dockerfile
     container_name: opsfinder-backend
     restart: unless-stopped
-    depends_on:
-      database:
-        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/${DB_NAME:-opsfinder}
@@ -77,9 +44,6 @@ services:
       dockerfile: Dockerfile
     container_name: opsfinder-frontend
     restart: unless-stopped
-    depends_on:
-      backend:
-        condition: service_healthy
     volumes:
       - ./logs/frontend:/var/log/opsfinder/frontend
     ports:
@@ -100,8 +64,4 @@ services:
 
 networks:
   opsfinder-network:
-    driver: bridge
-
-volumes:
-  postgres_data:
-    driver: local
+    external: true

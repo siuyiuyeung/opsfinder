@@ -1,13 +1,12 @@
 #!/bin/bash
 
-# OpsFinder Complete Deployment Script
-# Deploys all services (database + backend + frontend)
-# For separate deployment, use deploy-db.sh and deploy-app.sh
+# OpsFinder Application Deployment Script
+# Deploy backend and frontend services (requires database to be running)
 
 set -e
 
 echo "==================================="
-echo "OpsFinder Complete Deployment"
+echo "OpsFinder Application Deployment"
 echo "==================================="
 
 # Check if .env file exists
@@ -39,20 +38,30 @@ echo "Environment variables loaded successfully"
 
 # Create log directories if they don't exist
 echo "Creating log directories..."
-mkdir -p logs/database logs/backend logs/frontend
+mkdir -p logs/backend logs/frontend
 chmod -R 755 logs
 
-# Create network if it doesn't exist
-echo "Creating Docker network..."
-docker network create opsfinder-network 2>/dev/null || echo "Network already exists"
+# Check if network exists
+if ! docker network inspect opsfinder-network >/dev/null 2>&1; then
+    echo "ERROR: Docker network 'opsfinder-network' not found!"
+    echo "Please deploy the database first: ./deploy-db.sh"
+    exit 1
+fi
 
-# Stop existing containers
-echo "Stopping existing containers..."
-docker-compose down 2>/dev/null || true
+# Check if database is running
+if ! docker ps | grep -q opsfinder-db; then
+    echo "WARNING: Database container is not running!"
+    echo "Please start the database first: ./deploy-db.sh"
+    exit 1
+fi
 
-# Deploy all services
-echo "Deploying all services..."
-docker-compose up -d --build
+# Stop existing application containers
+echo "Stopping existing application containers..."
+docker-compose -f docker-compose.app.yml down
+
+# Build and start application services
+echo "Building and starting application services..."
+docker-compose -f docker-compose.app.yml up -d --build
 
 # Wait for services to be healthy
 echo "Waiting for services to be healthy..."
@@ -61,39 +70,33 @@ sleep 20
 # Check service status
 echo ""
 echo "==================================="
-echo "Service Status:"
+echo "Application Status:"
 echo "==================================="
-docker-compose ps
+docker-compose -f docker-compose.app.yml ps
 
 # Show logs
 echo ""
 echo "==================================="
-echo "Recent Logs:"
+echo "Recent Application Logs:"
 echo "==================================="
-docker-compose logs --tail=50
+docker-compose -f docker-compose.app.yml logs --tail=50
 
 echo ""
 echo "==================================="
-echo "Complete Deployment Successful!"
+echo "Application Deployment Complete!"
 echo "==================================="
 echo "Frontend URL: http://localhost:${FRONTEND_PORT:-80}"
 echo "Backend API: http://localhost:8080/api"
-echo "Database: localhost:5432 (${DB_NAME:-opsfinder})"
 echo ""
 echo "Log Files:"
-echo "  Database: logs/database/"
 echo "  Backend:  logs/backend/"
 echo "  Frontend: logs/frontend/"
 echo ""
 echo "To view logs:"
-echo "  All services:  docker-compose logs -f"
+echo "  Docker logs:   docker-compose -f docker-compose.app.yml logs -f"
 echo "  Application:   tail -f logs/backend/opsfinder.log"
 echo "  Nginx access:  tail -f logs/frontend/access.log"
 echo ""
-echo "Separate deployment scripts:"
-echo "  ./deploy-db.sh  - Deploy database only"
-echo "  ./deploy-app.sh - Deploy backend + frontend only"
-echo ""
-echo "To stop: docker-compose down"
-echo "To restart: docker-compose restart"
+echo "To stop: docker-compose -f docker-compose.app.yml down"
+echo "To restart: docker-compose -f docker-compose.app.yml restart"
 echo "==================================="

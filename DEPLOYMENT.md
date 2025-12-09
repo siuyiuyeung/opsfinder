@@ -74,20 +74,35 @@ openssl rand -base64 48
 
 ### 4. Deploy Application
 
-```bash
-# Make deploy script executable
-chmod +x deploy.sh
+**Option A: Complete Deployment (Recommended for first-time setup)**
 
-# Run deployment
+```bash
+# Make deploy scripts executable
+chmod +x deploy.sh deploy-db.sh deploy-app.sh
+
+# Deploy all services
 ./deploy.sh
 ```
 
-The script will:
+**Option B: Separate Deployment (Database + Application)**
+
+```bash
+# Deploy database first
+./deploy-db.sh
+
+# Then deploy backend + frontend
+./deploy-app.sh
+```
+
+The scripts will:
 1. Validate environment configuration
-2. Stop existing containers
-3. Build Docker images
-4. Start all services (database, backend, frontend)
-5. Display service status and logs
+2. Create Docker network and log directories
+3. Stop existing containers
+4. Build Docker images
+5. Start services with health checks
+6. Display service status and logs
+
+For detailed deployment options, see [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
 
 ### 5. Access Application
 
@@ -105,18 +120,21 @@ The script will:
 
 ### Services
 
-1. **database** (postgres:15-alpine)
+1. **database** (postgres:16-alpine)
    - Port: 5432
    - Volume: postgres_data
    - Health checks enabled
+   - Can be deployed separately via docker-compose.db.yml
 
 2. **backend** (Spring Boot 4.0 + Java 21)
    - Port: 8080
    - Connects to database service
    - Auto-runs Liquibase migrations
    - Health checks via /actuator/health
+   - Can be deployed with frontend via docker-compose.app.yml
 
 3. **frontend** (Vue 3 + Nginx)
+   - Can be deployed with backend via docker-compose.app.yml
    - Port: 80
    - Proxies API requests to backend
    - SPA with client-side routing
