@@ -3,8 +3,8 @@ databaseChangeLog:
       file: db/changelog/changelog-001-users.yaml
   - include:
       file: db/changelog/changelog-002-devices.yaml
+  - include:
+      file: db/changelog/changelog-003-error-messages.yaml
   # Future changesets will be added here
-  # - include:
-  #     file: db/changelog/changelog-003-error-messages.yaml
   # - include:
   #     file: db/changelog/changelog-004-incidents.yaml
