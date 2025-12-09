@@ -6,7 +6,7 @@ Complete guide for deploying OpsFinder to a Linux VM using Docker.
 
 - Linux VM (Ubuntu 20.04+ recommended)
 - Docker Engine 20.10+
-- Docker Compose 2.0+
+- Docker Compose v2 (comes with Docker Engine, or install separately)
 - At least 2GB RAM, 20GB disk space
 - Open ports: 80 (frontend), 8080 (backend), 5432 (database)
 
@@ -18,23 +18,21 @@ Complete guide for deploying OpsFinder to a Linux VM using Docker.
 # Update package index
 sudo apt-get update
 
-# Install Docker
+# Install Docker (includes Docker Compose v2)
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 
 # Add your user to docker group
 sudo usermod -aG docker $USER
 
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
 # Verify installation
 docker --version
-docker-compose --version
+docker compose version
 
 # Log out and back in for group changes to take effect
 ```
+
+**Note**: Docker Compose v2 is integrated into Docker CLI as `docker compose` (not `docker-compose`). If you have the old standalone version, either update to Docker Engine 20.10+ or install Docker Compose v2 plugin.
 
 ### 2. Clone or Upload Project
 
@@ -153,35 +151,35 @@ For detailed deployment options, see [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md
 
 ```bash
 # All services
-docker-compose logs -f
+docker compose logs -f
 
 # Specific service
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f database
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f database
 
 # Last 100 lines
-docker-compose logs --tail=100
+docker compose logs --tail=100
 ```
 
 ### Restart Services
 
 ```bash
 # Restart all
-docker-compose restart
+docker compose restart
 
 # Restart specific service
-docker-compose restart backend
+docker compose restart backend
 ```
 
 ### Stop Application
 
 ```bash
 # Stop but keep data
-docker-compose down
+docker compose down
 
 # Stop and remove volumes (WARNING: deletes database!)
-docker-compose down -v
+docker compose down -v
 ```
 
 ### Update Application
@@ -191,7 +189,7 @@ docker-compose down -v
 git pull
 
 # Rebuild and restart
-docker-compose up -d --build
+docker compose up -d --build
 
 # Or use deploy script
 ./deploy.sh
@@ -229,7 +227,7 @@ docker exec -i opsfinder-db psql -U opsuser opsfinder < backup_20231201_120000.s
 
 ```bash
 # Run multiple backend instances
-docker-compose up -d --scale backend=3
+docker compose up -d --scale backend=3
 ```
 
 ## Security Hardening
@@ -262,8 +260,8 @@ sudo certbot --nginx -d your-domain.com
 
 ```bash
 # Update Docker images
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 
 # Update system packages
 sudo apt-get update && sudo apt-get upgrade
@@ -306,7 +304,7 @@ docker system df
 
 ```bash
 # Check logs
-docker-compose logs backend
+docker compose logs backend
 
 # Common issues:
 # - Database not ready: Wait 30s and retry
@@ -321,15 +319,15 @@ docker-compose logs backend
 docker exec -it opsfinder-db psql -U opsuser -d opsfinder
 
 # Reset database (WARNING: deletes all data!)
-docker-compose down -v
-docker-compose up -d database
+docker compose down -v
+docker compose up -d database
 ```
 
 ### Frontend 404 Errors
 
 ```bash
 # Rebuild frontend
-docker-compose up -d --build frontend
+docker compose up -d --build frontend
 
 # Check nginx config
 docker exec opsfinder-frontend cat /etc/nginx/conf.d/default.conf
@@ -349,7 +347,7 @@ sudo lsof -i :80
 ```bash
 # Logs not appearing in logs/ directory
 # Check volume mounts
-docker-compose config | grep -A 5 volumes
+docker compose config | grep -A 5 volumes
 
 # Ensure log directories exist with correct permissions
 mkdir -p logs/backend logs/frontend logs/database
@@ -432,10 +430,10 @@ tail -f logs/frontend/access.log
 tail -f logs/frontend/error.log
 
 # All Docker container logs
-docker-compose logs -f
+docker compose logs -f
 
 # Specific service
-docker-compose logs -f backend
+docker compose logs -f backend
 ```
 
 **Log Rotation Setup**:
@@ -488,7 +486,7 @@ find logs -name "*.gz" -mtime +60 -delete
 
 ```bash
 # Stop and remove containers
-docker-compose down
+docker compose down
 
 # Remove volumes (deletes data!)
 docker volume rm opsfinder_postgres_data
@@ -503,7 +501,7 @@ rm -rf opsfinder
 
 ## Support
 
-- Check logs: `docker-compose logs -f`
+- Check logs: `docker compose logs -f`
 - GitHub Issues: [Your repo issues]
 - Documentation: See IMPLEMENTATION_PLAN.md
 

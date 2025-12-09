@@ -21,7 +21,7 @@ Deploy all services together using the main docker-compose.yml:
 ./deploy.sh
 
 # Or manually
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 **Use when:**
@@ -56,10 +56,10 @@ Deploy services individually:
 docker network create opsfinder-network
 
 # Deploy database only
-docker-compose -f docker-compose.db.yml up -d
+docker compose -f docker-compose.db.yml up -d
 
 # Deploy application services only
-docker-compose -f docker-compose.app.yml up -d --build
+docker compose -f docker-compose.app.yml up -d --build
 ```
 
 ## Docker Compose Files
@@ -94,33 +94,33 @@ docker-compose -f docker-compose.app.yml up -d --build
 ./deploy-app.sh
 
 # Or manually
-docker-compose -f docker-compose.app.yml up -d --build
+docker compose -f docker-compose.app.yml up -d --build
 ```
 
 ### Scenario 3: Database Maintenance
 
 ```bash
 # Stop application
-docker-compose -f docker-compose.app.yml down
+docker compose -f docker-compose.app.yml down
 
 # Backup database
 docker exec opsfinder-db pg_dump -U opsuser opsfinder > backup.sql
 
 # Restart database
-docker-compose -f docker-compose.db.yml restart
+docker compose -f docker-compose.db.yml restart
 
 # Start application
-docker-compose -f docker-compose.app.yml up -d
+docker compose -f docker-compose.app.yml up -d
 ```
 
 ### Scenario 4: Rolling Update
 
 ```bash
 # Update backend only
-docker-compose -f docker-compose.app.yml up -d --build --no-deps backend
+docker compose -f docker-compose.app.yml up -d --build --no-deps backend
 
 # Update frontend only
-docker-compose -f docker-compose.app.yml up -d --build --no-deps frontend
+docker compose -f docker-compose.app.yml up -d --build --no-deps frontend
 ```
 
 ### Scenario 5: External Database
@@ -228,9 +228,9 @@ docker exec opsfinder-frontend ping backend
 
 ```bash
 # Stop all services
-docker-compose down
-docker-compose -f docker-compose.db.yml down
-docker-compose -f docker-compose.app.yml down
+docker compose down
+docker compose -f docker-compose.db.yml down
+docker compose -f docker-compose.app.yml down
 
 # Remove network
 docker network rm opsfinder-network

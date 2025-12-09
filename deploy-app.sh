@@ -86,11 +86,11 @@ fi
 
 # Stop existing application containers
 echo "Stopping existing application containers..."
-docker-compose -f docker-compose.app.yml down
+docker compose -f docker-compose.app.yml down
 
 # Build and start application services
 echo "Building and starting application services..."
-docker-compose -f docker-compose.app.yml up -d --build
+docker compose -f docker-compose.app.yml up -d --build
 
 # Wait for services to be healthy
 echo "Waiting for services to be healthy..."
@@ -101,14 +101,14 @@ echo ""
 echo "==================================="
 echo "Application Status:"
 echo "==================================="
-docker-compose -f docker-compose.app.yml ps
+docker compose -f docker-compose.app.yml ps
 
 # Show logs
 echo ""
 echo "==================================="
 echo "Recent Application Logs:"
 echo "==================================="
-docker-compose -f docker-compose.app.yml logs --tail=50
+docker compose -f docker-compose.app.yml logs --tail=50
 
 echo ""
 echo "==================================="
@@ -129,10 +129,10 @@ echo "  Backend:  logs/backend/"
 echo "  Frontend: logs/frontend/"
 echo ""
 echo "To view logs:"
-echo "  Docker logs:   docker-compose -f docker-compose.app.yml logs -f"
+echo "  Docker logs:   docker compose -f docker-compose.app.yml logs -f"
 echo "  Application:   tail -f logs/backend/opsfinder.log"
 echo "  Nginx access:  tail -f logs/frontend/access.log"
 echo ""
-echo "To stop: docker-compose -f docker-compose.app.yml down"
-echo "To restart: docker-compose -f docker-compose.app.yml restart"
+echo "To stop: docker compose -f docker-compose.app.yml down"
+echo "To restart: docker compose -f docker-compose.app.yml restart"
 echo "==================================="

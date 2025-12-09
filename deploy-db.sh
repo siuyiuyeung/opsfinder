@@ -42,11 +42,11 @@ docker network create opsfinder-network 2>/dev/null || echo "Network already exi
 
 # Stop existing database container
 echo "Stopping existing database container..."
-docker-compose -f docker-compose.db.yml down
+docker compose -f docker-compose.db.yml down
 
 # Start database service
 echo "Starting database service..."
-docker-compose -f docker-compose.db.yml up -d
+docker compose -f docker-compose.db.yml up -d
 
 # Wait for database to be healthy
 echo "Waiting for database to be healthy..."
@@ -57,14 +57,14 @@ echo ""
 echo "==================================="
 echo "Database Status:"
 echo "==================================="
-docker-compose -f docker-compose.db.yml ps
+docker compose -f docker-compose.db.yml ps
 
 # Show logs
 echo ""
 echo "==================================="
 echo "Recent Database Logs:"
 echo "==================================="
-docker-compose -f docker-compose.db.yml logs --tail=30
+docker compose -f docker-compose.db.yml logs --tail=30
 
 echo ""
 echo "==================================="
@@ -76,6 +76,6 @@ echo "User: ${DB_USER:-opsuser}"
 echo ""
 echo "Log Files: logs/database/"
 echo ""
-echo "To view logs: docker-compose -f docker-compose.db.yml logs -f"
-echo "To stop: docker-compose -f docker-compose.db.yml down"
+echo "To view logs: docker compose -f docker-compose.db.yml logs -f"
+echo "To stop: docker compose -f docker-compose.db.yml down"
 echo "==================================="

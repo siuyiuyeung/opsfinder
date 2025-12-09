@@ -65,11 +65,11 @@ if [ ! -z "$DB_HOST" ]; then
 
     # Stop existing containers
     echo "Stopping existing containers..."
-    docker-compose -f docker-compose.app.yml down 2>/dev/null || true
+    docker compose -f docker-compose.app.yml down 2>/dev/null || true
 
     # Deploy application services only
     echo "Deploying application services (backend + frontend)..."
-    docker-compose -f docker-compose.app.yml up -d --build
+    docker compose -f docker-compose.app.yml up -d --build
 else
     echo ""
     echo "Using local Docker database (PostgreSQL 16)"
@@ -88,11 +88,11 @@ else
 
     # Stop existing containers
     echo "Stopping existing containers..."
-    docker-compose down 2>/dev/null || true
+    docker compose down 2>/dev/null || true
 
     # Deploy all services
     echo "Deploying all services (database + backend + frontend)..."
-    docker-compose up -d --build
+    docker compose up -d --build
 fi
 
 # Wait for services to be healthy
@@ -105,9 +105,9 @@ echo "==================================="
 echo "Service Status:"
 echo "==================================="
 if [ "$USE_EXTERNAL_DB" = true ]; then
-    docker-compose -f docker-compose.app.yml ps
+    docker compose -f docker-compose.app.yml ps
 else
-    docker-compose ps
+    docker compose ps
 fi
 
 # Show logs
@@ -116,9 +116,9 @@ echo "==================================="
 echo "Recent Logs:"
 echo "==================================="
 if [ "$USE_EXTERNAL_DB" = true ]; then
-    docker-compose -f docker-compose.app.yml logs --tail=50
+    docker compose -f docker-compose.app.yml logs --tail=50
 else
-    docker-compose logs --tail=50
+    docker compose logs --tail=50
 fi
 
 echo ""
@@ -136,12 +136,12 @@ if [ "$USE_EXTERNAL_DB" = true ]; then
     echo "  Frontend: logs/frontend/"
     echo ""
     echo "To view logs:"
-    echo "  All services:  docker-compose -f docker-compose.app.yml logs -f"
+    echo "  All services:  docker compose -f docker-compose.app.yml logs -f"
     echo "  Application:   tail -f logs/backend/opsfinder.log"
     echo "  Nginx access:  tail -f logs/frontend/access.log"
     echo ""
-    echo "To stop: docker-compose -f docker-compose.app.yml down"
-    echo "To restart: docker-compose -f docker-compose.app.yml restart"
+    echo "To stop: docker compose -f docker-compose.app.yml down"
+    echo "To restart: docker compose -f docker-compose.app.yml restart"
 else
     echo "Database: localhost:5432 (${DB_NAME:-opsfinder}) [LOCAL DOCKER]"
     echo ""
@@ -151,7 +151,7 @@ else
     echo "  Frontend: logs/frontend/"
     echo ""
     echo "To view logs:"
-    echo "  All services:  docker-compose logs -f"
+    echo "  All services:  docker compose logs -f"
     echo "  Application:   tail -f logs/backend/opsfinder.log"
     echo "  Nginx access:  tail -f logs/frontend/access.log"
     echo ""
@@ -159,7 +159,7 @@ else
     echo "  ./deploy-db.sh  - Deploy database only"
     echo "  ./deploy-app.sh - Deploy backend + frontend only"
     echo ""
-    echo "To stop: docker-compose down"
-    echo "To restart: docker-compose restart"
+    echo "To stop: docker compose down"
+    echo "To restart: docker compose restart"
 fi
 echo "==================================="
