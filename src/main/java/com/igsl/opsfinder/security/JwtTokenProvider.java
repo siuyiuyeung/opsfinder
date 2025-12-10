@@ -96,48 +96,51 @@ public class JwtTokenProvider {
 
     /**
      * Get username from JWT token.
+     * Updated for JJWT 1.0+
      *
      * @param token JWT token
      * @return username
      */
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
 
         return claims.getSubject();
     }
 
     /**
      * Get roles from JWT token.
+     * Updated for JJWT 1.0+
      *
      * @param token JWT token
      * @return roles as comma-separated string
      */
     public String getRolesFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
 
         return claims.get("roles", String.class);
     }
 
     /**
      * Validate JWT token.
+     * Updated for JJWT 1.0+
      *
      * @param authToken JWT token to validate
      * @return true if valid, false otherwise
      */
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
+            Jwts.parser()
+                    .verifyWith(getSigningKey())
                     .build()
-                    .parseClaimsJws(authToken);
+                    .parseSignedClaims(authToken);
             return true;
         } catch (SecurityException ex) {
             logger.error("Invalid JWT signature: {}", ex.getMessage());
