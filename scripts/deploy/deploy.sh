@@ -6,9 +6,14 @@
 
 set -e
 
+# Change to project root directory (2 levels up from scripts/deploy/)
+cd "$(dirname "$0")/../.." || exit 1
+
 echo "==================================="
 echo "OpsFinder Complete Deployment"
 echo "==================================="
+echo "Working directory: $(pwd)"
+echo
 
 # Check if .env file exists
 if [ ! -f .env ]; then

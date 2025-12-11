@@ -10,13 +10,13 @@ echo "OpsFinder Log Rotation Setup"
 echo "==================================="
 
 # Check if running as root or with sudo
-if [ "$EUID" -ne 0 ]; then 
+if [ "$EUID" -ne 0 ]; then
     echo "Please run as root or with sudo"
     exit 1
 fi
 
-# Define the project directory
-PROJECT_DIR=$(dirname "$(readlink -f "$0")")
+# Get project root directory (2 levels up from scripts/setup/)
+PROJECT_DIR=$(cd "$(dirname "$0")/../.." && pwd)
 LOGROTATE_DIR="/etc/logrotate.d"
 
 echo "Project directory: $PROJECT_DIR"
