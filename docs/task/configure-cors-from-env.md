@@ -21,12 +21,12 @@ After reading the codebase, I've identified the following issues:
 
 ## Todo List
 
-- [ ] Unify environment variable naming (use `ALLOWED_ORIGINS` for both dev and prod)
-- [ ] Update application.yml to use `ALLOWED_ORIGINS` instead of `CORS_ALLOWED_ORIGINS`
-- [ ] Add all CORS configuration properties to application.yml (methods, headers, credentials)
-- [ ] Create CorsProperties configuration class to bind CORS settings from YAML
-- [ ] Update SecurityConfig.java to inject and use CorsProperties
-- [ ] Update .env.example with documentation for ALLOWED_ORIGINS
+- [x] Unify environment variable naming (use `ALLOWED_ORIGINS` for both dev and prod)
+- [x] Update application.yml to use `ALLOWED_ORIGINS` instead of `CORS_ALLOWED_ORIGINS`
+- [x] Add all CORS configuration properties to application.yml (methods, headers, credentials)
+- [x] Create CorsProperties configuration class to bind CORS settings from YAML
+- [x] Update SecurityConfig.java to inject and use CorsProperties
+- [x] Update .env.example with documentation for ALLOWED_ORIGINS
 
 ## Implementation Approach
 
