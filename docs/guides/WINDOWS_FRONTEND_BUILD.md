@@ -34,23 +34,23 @@ Docker Compose version v2.x.x
 
 #### 1. Build with Default Configuration
 ```cmd
-build-frontend-windows.bat
+scripts/build/build-frontend-windows.bat
 ```
 This builds the frontend with default API URL: `http://localhost:8080/api`
 
 #### 2. Build with Custom Backend URL
 ```cmd
-build-frontend-windows.bat http://backend:8080/api
+scripts/build/build-frontend-windows.bat http://backend:8080/api
 ```
 
 For external backend:
 ```cmd
-build-frontend-windows.bat https://api.your-domain.com/api
+scripts/build/build-frontend-windows.bat https://api.your-domain.com/api
 ```
 
 #### 3. Run the Container
 ```cmd
-run-frontend-windows.bat
+scripts/build/run-frontend-windows.bat
 ```
 
 Access the application at: http://localhost
@@ -77,22 +77,22 @@ The frontend needs to know where the backend API is located. Configure this usin
 
 **Local Development (Backend on Windows)**:
 ```cmd
-build-frontend-windows.bat http://localhost:8080/api
+scripts/build/build-frontend-windows.bat http://localhost:8080/api
 ```
 
 **Docker Compose Deployment (Backend in Docker)**:
 ```cmd
-build-frontend-windows.bat http://backend:8080/api
+scripts/build/build-frontend-windows.bat http://backend:8080/api
 ```
 
 **Production with Custom Domain**:
 ```cmd
-build-frontend-windows.bat https://api.your-domain.com/api
+scripts/build/build-frontend-windows.bat https://api.your-domain.com/api
 ```
 
 **Production with IP Address**:
 ```cmd
-build-frontend-windows.bat http://192.168.1.100:8080/api
+scripts/build/build-frontend-windows.bat http://192.168.1.100:8080/api
 ```
 
 ### Port Configuration
@@ -110,23 +110,23 @@ Access at: http://localhost:8080
 ### Scenario 1: Full Docker Deployment
 Backend and database in Docker, frontend in Docker:
 ```cmd
-build-frontend-windows.bat http://backend:8080/api
-run-frontend-windows.bat
+scripts/build/build-frontend-windows.bat http://backend:8080/api
+scripts/build/run-frontend-windows.bat
 ```
 
 ### Scenario 2: Backend on Windows, Frontend in Docker
 Backend running directly on Windows, frontend in Docker:
 ```cmd
-build-frontend-windows.bat http://host.docker.internal:8080/api
-run-frontend-windows.bat
+scripts/build/build-frontend-windows.bat http://host.docker.internal:8080/api
+scripts/build/run-frontend-windows.bat
 ```
 Note: `host.docker.internal` is a special DNS name that resolves to the host machine from inside Docker.
 
 ### Scenario 3: Production Deployment
 External production backend:
 ```cmd
-build-frontend-windows.bat https://api.production.com/api
-run-frontend-windows.bat
+scripts/build/build-frontend-windows.bat https://api.production.com/api
+scripts/build/run-frontend-windows.bat
 ```
 
 ### Scenario 4: Development with Hot Reload
@@ -222,8 +222,8 @@ docker restart opsfinder-frontend
   ```cmd
   docker stop opsfinder-frontend
   docker rm opsfinder-frontend
-  build-frontend-windows.bat http://correct-backend-url:8080/api
-  run-frontend-windows.bat
+  scripts/build/build-frontend-windows.bat http://correct-backend-url:8080/api
+  scripts/build/run-frontend-windows.bat
   ```
 
 ### Issue: Frontend shows "Network Error"
@@ -231,7 +231,7 @@ docker restart opsfinder-frontend
 1. Check browser console (F12) for the actual API URL being used
 2. Rebuild with correct URL:
    ```cmd
-   build-frontend-windows.bat http://correct-url:8080/api
+   scripts/build/build-frontend-windows.bat http://correct-url:8080/api
    ```
 
 ### Issue: Changes to frontend code not reflected
@@ -239,15 +239,15 @@ docker restart opsfinder-frontend
 ```cmd
 docker stop opsfinder-frontend
 docker rm opsfinder-frontend
-build-frontend-windows.bat
-run-frontend-windows.bat
+scripts/build/build-frontend-windows.bat
+scripts/build/run-frontend-windows.bat
 ```
 
 ### Issue: "Error response from daemon: Conflict"
 **Solution**: Container name already exists
 ```cmd
 docker rm -f opsfinder-frontend
-run-frontend-windows.bat
+scripts/build/run-frontend-windows.bat
 ```
 
 ## Development Workflow
@@ -259,19 +259,19 @@ git clone <repository-url>
 cd OpsFinder
 
 REM Build frontend
-build-frontend-windows.bat http://localhost:8080/api
+scripts/build/build-frontend-windows.bat http://localhost:8080/api
 ```
 
 ### 2. Making Changes
 ```cmd
 REM Edit files in frontend/src/
 REM After changes, rebuild
-build-frontend-windows.bat http://localhost:8080/api
+scripts/build/build-frontend-windows.bat http://localhost:8080/api
 
 REM Restart container
 docker stop opsfinder-frontend
 docker rm opsfinder-frontend
-run-frontend-windows.bat
+scripts/build/run-frontend-windows.bat
 ```
 
 ### 3. Development with Hot Reload (Recommended)
@@ -296,20 +296,20 @@ Changes will auto-reload without rebuilding Docker image.
 
 ### Test Local Backend
 ```cmd
-build-frontend-windows.bat http://localhost:8080/api
-run-frontend-windows.bat
+scripts/build/build-frontend-windows.bat http://localhost:8080/api
+scripts/build/run-frontend-windows.bat
 ```
 
 ### Test Docker Backend
 ```cmd
-build-frontend-windows.bat http://backend:8080/api
-run-frontend-windows.bat
+scripts/build/build-frontend-windows.bat http://backend:8080/api
+scripts/build/run-frontend-windows.bat
 ```
 
 ### Test Production Backend
 ```cmd
-build-frontend-windows.bat https://api.production.com/api
-run-frontend-windows.bat
+scripts/build/build-frontend-windows.bat https://api.production.com/api
+scripts/build/run-frontend-windows.bat
 ```
 
 ### Verify API URL in Running Container
@@ -341,8 +341,8 @@ REM Terminal 1: Start backend on Windows
 ./gradlew bootRun
 
 REM Terminal 2: Build and run frontend in Docker
-build-frontend-windows.bat http://host.docker.internal:8080/api
-run-frontend-windows.bat
+scripts/build/build-frontend-windows.bat http://host.docker.internal:8080/api
+scripts/build/run-frontend-windows.bat
 ```
 
 ## Performance Tips
@@ -351,7 +351,7 @@ run-frontend-windows.bat
 1. **Use Docker BuildKit**:
    ```cmd
    set DOCKER_BUILDKIT=1
-   build-frontend-windows.bat
+   scripts/build/build-frontend-windows.bat
    ```
 
 2. **Clean Docker Cache** (if builds are slow):
@@ -375,7 +375,7 @@ run-frontend-windows.bat
    ```cmd
    docker pull node:20-alpine
    docker pull nginx:alpine
-   build-frontend-windows.bat https://api.production.com/api
+   scripts/build/build-frontend-windows.bat https://api.production.com/api
    ```
 
 ## Additional Resources

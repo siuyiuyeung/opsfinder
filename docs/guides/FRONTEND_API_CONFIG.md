@@ -27,7 +27,7 @@ VITE_API_BASE_URL=http://192.168.1.100:8080/api
 
 Then deploy:
 ```bash
-./deploy.sh
+./scripts/deploy/deploy.sh
 # or
 docker compose up -d --build
 ```
@@ -100,7 +100,7 @@ VITE_API_BASE_URL=https://backend.other-domain.com/api
 **Configuration:**
 ```bash
 # Windows batch
-build-frontend-windows.bat http://host.docker.internal:8080/api
+scripts/build/build-frontend-windows.bat http://host.docker.internal:8080/api
 ```
 
 **Why:** `host.docker.internal` is Docker's special DNS name for the Windows host.

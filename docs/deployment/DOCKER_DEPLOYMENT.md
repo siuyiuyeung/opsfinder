@@ -18,7 +18,7 @@ Deploy all services together using the main docker-compose.yml:
 
 ```bash
 # Deploy everything
-./deploy.sh
+./scripts/deploy/deploy.sh
 
 # Or manually
 docker compose up -d --build
@@ -35,10 +35,10 @@ Deploy database and application services separately:
 
 ```bash
 # Step 1: Deploy database
-./deploy-db.sh
+./scripts/deploy/deploy-db.sh
 
 # Step 2: Deploy backend + frontend
-./deploy-app.sh
+./scripts/deploy/deploy-app.sh
 ```
 
 **Use when:**
@@ -74,9 +74,9 @@ docker compose -f docker-compose.app.yml up -d --build
 
 | Script | Services | Description |
 |--------|----------|-------------|
-| `deploy.sh` | All | Complete deployment |
-| `deploy-db.sh` | Database | Database deployment |
-| `deploy-app.sh` | Backend + Frontend | Application deployment |
+| `scripts/deploy/deploy.sh` | All | Complete deployment |
+| `scripts/deploy/deploy-db.sh` | Database | Database deployment |
+| `scripts/deploy/deploy-app.sh` | Backend + Frontend | Application deployment |
 
 ## Common Scenarios
 
@@ -84,14 +84,14 @@ docker compose -f docker-compose.app.yml up -d --build
 
 ```bash
 # Complete deployment
-./deploy.sh
+./scripts/deploy/deploy.sh
 ```
 
 ### Scenario 2: Code Update (Keep Database)
 
 ```bash
 # Rebuild and restart only application
-./deploy-app.sh
+./scripts/deploy/deploy-app.sh
 
 # Or manually
 docker compose -f docker-compose.app.yml up -d --build
@@ -138,7 +138,7 @@ DB_USER=your_user
 DB_PASSWORD=your_password
 
 # Deploy application only
-./deploy-app.sh
+./scripts/deploy/deploy-app.sh
 ```
 
 ## Service Dependencies
@@ -236,7 +236,7 @@ docker compose -f docker-compose.app.yml down
 docker network rm opsfinder-network
 
 # Fresh deployment
-./deploy.sh
+./scripts/deploy/deploy.sh
 ```
 
 ## Best Practices

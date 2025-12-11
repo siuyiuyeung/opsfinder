@@ -97,20 +97,20 @@ VITE_API_BASE_URL=http://192.168.1.100:8080/api
 
 ```bash
 # Make deploy scripts executable
-chmod +x deploy.sh deploy-db.sh deploy-app.sh
+chmod +x scripts/deploy/deploy.sh scripts/deploy/deploy-db.sh scripts/deploy/deploy-app.sh
 
 # Deploy all services
-./deploy.sh
+./scripts/deploy/deploy.sh
 ```
 
 **Option B: Separate Deployment (Database + Application)**
 
 ```bash
 # Deploy database first
-./deploy-db.sh
+./scripts/deploy/deploy-db.sh
 
 # Then deploy backend + frontend
-./deploy-app.sh
+./scripts/deploy/deploy-app.sh
 ```
 
 The scripts will:
@@ -213,7 +213,7 @@ git pull
 docker compose up -d --build
 
 # Or use deploy script
-./deploy.sh
+./scripts/deploy/deploy.sh
 ```
 
 ### Using External Database
@@ -229,7 +229,7 @@ DB_USER=your_user
 DB_PASSWORD=your_password
 
 # Deploy (automatically skips local database)
-./deploy.sh
+./scripts/deploy/deploy.sh
 ```
 
 For comprehensive external database setup, see [EXTERNAL_DATABASE.md](EXTERNAL_DATABASE.md)

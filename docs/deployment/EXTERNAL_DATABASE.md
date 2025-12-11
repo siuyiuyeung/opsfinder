@@ -40,7 +40,7 @@ DB_PORT=5432
 
 ```bash
 # Deploy only backend + frontend (no local database)
-./deploy.sh
+./scripts/deploy/deploy.sh
 ```
 
 The script automatically detects `DB_HOST` and skips database deployment.
@@ -112,7 +112,7 @@ telnet your-db-host 5432
 # 1. Set up external database
 # 2. Configure .env with DB_HOST
 # 3. Deploy application
-./deploy.sh
+./scripts/deploy/deploy.sh
 ```
 
 ### Scenario 2: Migrate from Local to External Database
@@ -126,7 +126,7 @@ psql -h your-db-host -U your_user opsfinder < backup.sql
 
 # 3. Update .env with DB_HOST
 # 4. Redeploy
-./deploy.sh
+./scripts/deploy/deploy.sh
 ```
 
 ## Reverting to Local Database
@@ -134,7 +134,7 @@ psql -h your-db-host -U your_user opsfinder < backup.sql
 To switch back to local Docker database:
 
 1. Remove or comment out `DB_HOST` in `.env`
-2. Redeploy: `./deploy.sh`
+2. Redeploy: `./scripts/deploy/deploy.sh`
 
 ```bash
 # .env
