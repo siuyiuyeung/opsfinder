@@ -39,6 +39,9 @@ OpsFinder/
 │   └── test/
 │       └── java/com/igsl/opsfinder/
 │           └── OpsFinderApplicationTests.java
+├── docs/
+│   ├── IMPLEMENTATION_PLAN.md  (main project plan)
+│   └── task/                   (individual task documentation)
 ├── gradle/
 ├── build.gradle
 ├── settings.gradle
@@ -52,12 +55,13 @@ OpsFinder/
 **MANDATORY WORKFLOW - FOLLOW THESE STEPS FOR EVERY TASK:**
 
 1. **THINK FIRST**: Thoroughly analyze the problem and read all relevant codebase files
-2. **WRITE PLAN**: Create a detailed plan in `tasks/todo.md` with a checklist of todo items
+2. **WRITE PLAN**: Create a detailed plan in `docs/task/[task-name].md` with a checklist of todo items
 3. **SEEK APPROVAL**: Stop and check in with the user to verify the plan before proceeding
 4. **EXECUTE**: Work through todo items one by one, marking each as complete as you go
 5. **COMMUNICATE**: Provide high-level explanations of changes at each step (not verbose details)
 6. **SIMPLIFY**: Make every task and code change as simple as possible - minimal code impact
-7. **REVIEW**: Add a review section to `tasks/todo.md` summarizing all changes and relevant info
+7. **REVIEW**: Add a review section to the plan document summarizing all changes and relevant info
+8. **UPDATE MAIN PLAN**: Add completed task to `docs/IMPLEMENTATION_PLAN.md` with reference to task file
 
 ### CORE PRINCIPLES
 
@@ -76,7 +80,7 @@ OpsFinder/
 
 ### Task Planning Format
 
-All plans must be written to `tasks/todo.md` with this structure:
+All plans must be written to `docs/task/[task-name].md` with this structure:
 
 ```markdown
 # Task: [Task Name]
@@ -91,6 +95,25 @@ All plans must be written to `tasks/todo.md` with this structure:
 
 ## Review
 [Summary of changes - filled in after completion]
+```
+
+### Documentation Structure
+
+**Task Documentation**:
+- Individual tasks: `docs/task/[task-name].md`
+- Main project plan: `docs/IMPLEMENTATION_PLAN.md`
+
+**After completing a task**:
+1. Ensure task file is in `docs/task/` directory
+2. Update `docs/IMPLEMENTATION_PLAN.md` with:
+   - Brief description of completed task
+   - Date completed
+   - Reference to task file: `See: docs/task/[task-name].md`
+
+**Example entry in IMPLEMENTATION_PLAN.md**:
+```markdown
+- ✅ **CORS environment configuration** - ALLOWED_ORIGINS now reads from environment variables (2025-12-11)
+  - See: `docs/task/configure-cors-from-env.md`
 ```
 
 ## Development Guidelines
@@ -312,6 +335,6 @@ logging.level.com.igsl.opsfinder=INFO
 
 ---
 
-**Last Updated**: 2025-12-04
+**Last Updated**: 2025-12-11
 **Maintained By**: Development Team with Claude Code
 **Framework**: SuperClaude v3.0

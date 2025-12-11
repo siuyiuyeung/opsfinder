@@ -39,6 +39,9 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private CorsProperties corsProperties;
+
     /**
      * Configure security filter chain.
      *
@@ -107,23 +110,21 @@ public class SecurityConfig {
     }
 
     /**
-     * Configure CORS settings.
+     * Configure CORS settings from application properties.
+     * CORS configuration is loaded from application.yml and can be overridden
+     * by environment variables (e.g., ALLOWED_ORIGINS).
      *
      * @return CorsConfigurationSource
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",
-                "http://localhost:5173",
-                "http://localhost:8080"
-        ));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
-        configuration.setExposedHeaders(List.of("Authorization"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
+        configuration.setAllowedOrigins(corsProperties.getAllowedOrigins());
+        configuration.setAllowedMethods(corsProperties.getAllowedMethods());
+        configuration.setAllowedHeaders(corsProperties.getAllowedHeaders());
+        configuration.setExposedHeaders(corsProperties.getExposedHeaders());
+        configuration.setAllowCredentials(corsProperties.isAllowCredentials());
+        configuration.setMaxAge(corsProperties.getMaxAge());
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
