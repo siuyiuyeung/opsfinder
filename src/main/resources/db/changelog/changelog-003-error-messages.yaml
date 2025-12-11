@@ -44,10 +44,9 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
-        - addCheckConstraint:
-            constraintName: chk_severity
-            tableName: error_messages
-            checkConstraint: "severity IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')"
+        - sql:
+            sql: ALTER TABLE error_messages ADD CONSTRAINT chk_severity CHECK (severity IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL'));
+            rollback: ALTER TABLE error_messages DROP CONSTRAINT IF EXISTS chk_severity;
 
         - createIndex:
             indexName: idx_error_messages_category
@@ -110,6 +109,12 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
                   type: TIMESTAMP
                   defaultValueComputed: CURRENT_TIMESTAMP
                   constraints:

@@ -255,9 +255,9 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ### Development
 ```properties
-# application-dev.properties
-spring.profiles.active=dev
-logging.level.com.igsl.opsfinder=DEBUG
+# Default application.yml is configured for development
+# No need to set spring.profiles.active for dev
+# Logging level is already set to DEBUG in application.yml
 ```
 
 ### Production

@@ -50,10 +50,9 @@ databaseChangeLog:
                   constraints:
                     nullable: false
 
-        - addCheckConstraint:
-            tableName: users
-            constraintName: chk_users_role
-            checkCondition: "role IN ('ADMIN', 'OPERATOR', 'VIEWER')"
+        - sql:
+            sql: ALTER TABLE users ADD CONSTRAINT chk_users_role CHECK (role IN ('ADMIN', 'OPERATOR', 'VIEWER'));
+            rollback: ALTER TABLE users DROP CONSTRAINT IF EXISTS chk_users_role;
 
       rollback:
         - dropTable:
@@ -107,7 +106,7 @@ databaseChangeLog:
               - column:
                   name: password
                   # BCrypt hash of 'admin123' - $2a$10$...
-                  value: $2a$10$xqZ9R2YV3QH9Z0mH.k4KfuF7.K8Y7.vQZ9R2YV3QH9Z0mH.k4KfuF
+                  value: $2a$10$7E0Ha7gAEfSvMXk8agOjkODb8hoS/APnWClseWqPKQS.uzlkcNnUy
               - column:
                   name: full_name
                   value: System Administrator
