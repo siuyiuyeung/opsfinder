@@ -83,26 +83,218 @@
       </v-card-text>
     </v-card>
 
-    <!-- Create/Edit Dialog (simplified) -->
-    <v-dialog v-model="showCreateDialog" max-width="600px" persistent>
+    <!-- Create/Edit Dialog -->
+    <v-dialog v-model="showCreateDialog" max-width="800px" persistent>
       <v-card>
-        <v-card-title>{{ editMode ? 'Edit' : 'Add' }} Tech Message Pattern</v-card-title>
+        <v-card-title>{{ editMode ? 'Edit' : 'Create' }} Tech Message</v-card-title>
+
         <v-card-text>
-          <p class="text-caption">Note: Full tech message pattern management UI coming soon. Use API for now.</p>
+          <v-form ref="formRef" v-model="formValid">
+            <v-text-field
+              v-model="formData.category"
+              label="Category"
+              :rules="categoryRules"
+              required
+              variant="outlined"
+              density="comfortable"
+            ></v-text-field>
+
+            <v-select
+              v-model="formData.severity"
+              :items="severityOptions"
+              label="Severity"
+              :rules="severityRules"
+              required
+              variant="outlined"
+              density="comfortable"
+            ></v-select>
+
+            <v-textarea
+              v-model="formData.pattern"
+              label="Regex Pattern"
+              :rules="patternRules"
+              required
+              variant="outlined"
+              density="comfortable"
+              rows="3"
+              hint="Enter a valid regex pattern"
+            ></v-textarea>
+
+            <v-textarea
+              v-model="formData.description"
+              label="Description (optional)"
+              :rules="descriptionRules"
+              variant="outlined"
+              density="comfortable"
+              rows="3"
+            ></v-textarea>
+
+            <v-alert v-if="patternError" type="error" density="compact" class="mb-4">
+              {{ patternError }}
+            </v-alert>
+
+            <v-btn
+              @click="testPattern"
+              :loading="testingPattern"
+              variant="outlined"
+              size="small"
+              class="mb-4"
+            >
+              Test Pattern
+            </v-btn>
+          </v-form>
+
+          <!-- Action Levels Section (only in edit mode) -->
+          <div v-if="editMode && currentTechMessageId">
+            <v-divider class="my-4"></v-divider>
+            <div class="d-flex align-center mb-2">
+              <h3>Action Levels</h3>
+              <v-spacer></v-spacer>
+              <v-btn
+                @click="showActionLevelDialog = true"
+                color="primary"
+                size="small"
+                prepend-icon="mdi-plus"
+              >
+                Add Action Level
+              </v-btn>
+            </div>
+
+            <v-alert v-if="!actionLevels.length" type="info" density="compact" class="mb-2">
+              No action levels defined yet. Add action levels to specify recommended actions based on occurrence frequency.
+            </v-alert>
+
+            <v-list v-else density="compact">
+              <v-list-item v-for="action in actionLevels" :key="action.id" class="border mb-2">
+                <template v-slot:prepend>
+                  <v-chip size="small" class="mr-2">
+                    {{ action.occurrenceMin }}{{ action.occurrenceMax ? `-${action.occurrenceMax}` : '+' }}
+                  </v-chip>
+                  <v-chip size="small" color="primary" class="mr-2">
+                    Priority: {{ action.priority }}
+                  </v-chip>
+                </template>
+
+                <v-list-item-title>{{ action.actionText }}</v-list-item-title>
+
+                <template v-slot:append>
+                  <v-btn
+                    @click="editActionLevel(action)"
+                    icon="mdi-pencil"
+                    size="small"
+                    variant="text"
+                  ></v-btn>
+                  <v-btn
+                    @click="confirmDeleteActionLevel(action)"
+                    icon="mdi-delete"
+                    size="small"
+                    variant="text"
+                    color="error"
+                  ></v-btn>
+                </template>
+              </v-list-item>
+            </v-list>
+          </div>
         </v-card-text>
+
         <v-card-actions>
+          <v-btn @click="closeDialog" :disabled="saving">Cancel</v-btn>
           <v-spacer></v-spacer>
-          <v-btn @click="closeDialog">Close</v-btn>
+          <v-btn
+            color="primary"
+            @click="saveTechMessage"
+            :disabled="!formValid"
+            :loading="saving"
+          >
+            {{ editMode ? 'Update' : 'Create' }}
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Action Level Dialog -->
+    <v-dialog v-model="showActionLevelDialog" max-width="600px" persistent>
+      <v-card>
+        <v-card-title>{{ actionLevelEditMode ? 'Edit' : 'Add' }} Action Level</v-card-title>
+
+        <v-card-text>
+          <v-form ref="actionFormRef" v-model="actionFormValid">
+            <v-text-field
+              v-model.number="actionFormData.occurrenceMin"
+              label="Minimum Occurrences"
+              type="number"
+              :rules="occurrenceMinRules"
+              required
+              variant="outlined"
+              density="comfortable"
+              hint="Minimum number of times the message must occur"
+            ></v-text-field>
+
+            <v-text-field
+              v-model.number="actionFormData.occurrenceMax"
+              label="Maximum Occurrences (optional)"
+              type="number"
+              :rules="occurrenceMaxRules"
+              variant="outlined"
+              density="comfortable"
+              hint="Leave empty for no upper limit"
+            ></v-text-field>
+
+            <v-text-field
+              v-model.number="actionFormData.priority"
+              label="Priority"
+              type="number"
+              :rules="priorityRules"
+              required
+              variant="outlined"
+              density="comfortable"
+              hint="Higher number = higher priority when multiple levels match"
+            ></v-text-field>
+
+            <v-textarea
+              v-model="actionFormData.actionText"
+              label="Recommended Action"
+              :rules="actionTextRules"
+              required
+              variant="outlined"
+              density="comfortable"
+              rows="4"
+              hint="Describe the recommended action for this occurrence range"
+            ></v-textarea>
+          </v-form>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-btn @click="closeActionLevelDialog" :disabled="savingActionLevel">Cancel</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            @click="saveActionLevel"
+            :disabled="!actionFormValid"
+            :loading="savingActionLevel"
+          >
+            {{ actionLevelEditMode ? 'Update' : 'Add' }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Success Snackbar -->
+    <v-snackbar v-model="showSuccess" color="success" timeout="3000">
+      {{ successMessage }}
+    </v-snackbar>
+
+    <!-- Error Snackbar -->
+    <v-snackbar v-model="showError" color="error" timeout="5000">
+      {{ errorMessage }}
+    </v-snackbar>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import type { TechMessage } from '@/types/tech'
+import type { TechMessage, TechMessageRequest, ActionLevel, ActionLevelRequest } from '@/types/tech'
 import api from '@/services/api'
 
 const authStore = useAuthStore()
@@ -115,8 +307,84 @@ const page = ref(1)
 const totalPages = ref(0)
 const showCreateDialog = ref(false)
 const editMode = ref(false)
+const currentTechMessageId = ref<number | null>(null)
+
+// Form state
+const formRef = ref()
+const formValid = ref(false)
+const formData = reactive<TechMessageRequest>({
+  category: '',
+  severity: 'MEDIUM',
+  pattern: '',
+  description: ''
+})
+
+// Action Levels state
+const actionLevels = ref<ActionLevel[]>([])
+const showActionLevelDialog = ref(false)
+const actionLevelEditMode = ref(false)
+const currentActionLevelId = ref<number | null>(null)
+const actionFormRef = ref()
+const actionFormValid = ref(false)
+const actionFormData = reactive<ActionLevelRequest>({
+  occurrenceMin: 1,
+  occurrenceMax: undefined,
+  actionText: '',
+  priority: 1
+})
+
+// Loading states
+const saving = ref(false)
+const testingPattern = ref(false)
+const savingActionLevel = ref(false)
+
+// Notification states
+const showSuccess = ref(false)
+const showError = ref(false)
+const successMessage = ref('')
+const errorMessage = ref('')
+const patternError = ref('')
 
 const severityOptions = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']
+
+// Validation rules
+const categoryRules = [
+  (v: string) => !!v || 'Category is required',
+  (v: string) => (v && v.length <= 100) || 'Category must be less than 100 characters'
+]
+
+const severityRules = [
+  (v: string) => !!v || 'Severity is required'
+]
+
+const patternRules = [
+  (v: string) => !!v || 'Pattern is required',
+  (v: string) => (v && v.length <= 1000) || 'Pattern must be less than 1000 characters'
+]
+
+const descriptionRules = [
+  (v: string) => !v || v.length <= 500 || 'Description must be less than 500 characters'
+]
+
+// Action Level validation rules
+const occurrenceMinRules = [
+  (v: number) => !!v || 'Minimum occurrence is required',
+  (v: number) => v >= 1 || 'Must be at least 1'
+]
+
+const occurrenceMaxRules = [
+  (v: number) => !v || v >= actionFormData.occurrenceMin || 'Maximum must be >= Minimum'
+]
+
+const priorityRules = [
+  (v: number) => !!v || 'Priority is required',
+  (v: number) => v >= 1 || 'Priority must be at least 1'
+]
+
+const actionTextRules = [
+  (v: string) => !!v || 'Action text is required',
+  (v: string) => (v && v.length <= 500) || 'Action text must be less than 500 characters'
+]
 
 onMounted(async () => {
   await loadCategories()
@@ -156,10 +424,28 @@ function getSeverityColor(severity: string) {
   return colors[severity] || 'grey'
 }
 
-function editTechMessage(techMessage: TechMessage) {
-  console.log('Edit tech message:', techMessage)
-  editMode.value = true
-  showCreateDialog.value = true
+async function editTechMessage(techMessage: TechMessage) {
+  try {
+    // Fetch full tech message details with action levels
+    const response = await api.get<TechMessage>(`/tech-messages/${techMessage.id}`)
+    const fullData = response.data
+
+    // Populate form
+    formData.category = fullData.category
+    formData.severity = fullData.severity
+    formData.pattern = fullData.pattern
+    formData.description = fullData.description || ''
+
+    // Load action levels
+    actionLevels.value = fullData.actionLevels || []
+
+    currentTechMessageId.value = techMessage.id
+    editMode.value = true
+    showCreateDialog.value = true
+  } catch (err: any) {
+    errorMessage.value = err.response?.data?.message || 'Failed to load tech message details'
+    showError.value = true
+  }
 }
 
 function confirmDelete(techMessage: TechMessage) {
@@ -171,14 +457,158 @@ function confirmDelete(techMessage: TechMessage) {
 async function deleteTechMessage(id: number) {
   try {
     await api.delete(`/tech-messages/${id}`)
+    successMessage.value = 'Tech message deleted successfully'
+    showSuccess.value = true
     await loadTechMessages()
-  } catch (err) {
-    console.error('Failed to delete tech message:', err)
+    await loadCategories()
+  } catch (err: any) {
+    errorMessage.value = err.response?.data?.message || 'Failed to delete tech message'
+    showError.value = true
+  }
+}
+
+async function saveTechMessage() {
+  if (!formRef.value?.validate()) return
+
+  saving.value = true
+  patternError.value = ''
+
+  try {
+    if (editMode.value && currentTechMessageId.value) {
+      // Update existing tech message
+      await api.put(`/tech-messages/${currentTechMessageId.value}`, formData)
+      successMessage.value = 'Tech message updated successfully'
+    } else {
+      // Create new tech message
+      await api.post('/tech-messages', formData)
+      successMessage.value = 'Tech message created successfully'
+    }
+
+    showSuccess.value = true
+    closeDialog()
+    await loadTechMessages()
+    await loadCategories()
+  } catch (err: any) {
+    errorMessage.value = err.response?.data?.message || 'Failed to save tech message'
+    showError.value = true
+  } finally {
+    saving.value = false
+  }
+}
+
+function testPattern() {
+  patternError.value = ''
+  testingPattern.value = true
+
+  try {
+    // Test if pattern is valid regex
+    new RegExp(formData.pattern)
+    successMessage.value = 'Pattern is valid!'
+    showSuccess.value = true
+  } catch (err: any) {
+    patternError.value = `Invalid regex: ${err.message}`
+  } finally {
+    testingPattern.value = false
   }
 }
 
 function closeDialog() {
   showCreateDialog.value = false
   editMode.value = false
+  currentTechMessageId.value = null
+  patternError.value = ''
+  actionLevels.value = []
+
+  // Reset form
+  formData.category = ''
+  formData.severity = 'MEDIUM'
+  formData.pattern = ''
+  formData.description = ''
+
+  formRef.value?.resetValidation()
+}
+
+// Action Level Management Functions
+function editActionLevel(actionLevel: ActionLevel) {
+  actionFormData.occurrenceMin = actionLevel.occurrenceMin
+  actionFormData.occurrenceMax = actionLevel.occurrenceMax || undefined
+  actionFormData.priority = actionLevel.priority
+  actionFormData.actionText = actionLevel.actionText
+
+  currentActionLevelId.value = actionLevel.id
+  actionLevelEditMode.value = true
+  showActionLevelDialog.value = true
+}
+
+function confirmDeleteActionLevel(actionLevel: ActionLevel) {
+  if (confirm(`Delete action level for ${actionLevel.occurrenceMin}${actionLevel.occurrenceMax ? `-${actionLevel.occurrenceMax}` : '+'} occurrences?`)) {
+    deleteActionLevel(actionLevel.id)
+  }
+}
+
+async function deleteActionLevel(id: number) {
+  try {
+    await api.delete(`/tech-messages/actions/${id}`)
+    successMessage.value = 'Action level deleted successfully'
+    showSuccess.value = true
+
+    // Reload action levels
+    if (currentTechMessageId.value) {
+      const response = await api.get<TechMessage>(`/tech-messages/${currentTechMessageId.value}`)
+      actionLevels.value = response.data.actionLevels || []
+    }
+
+    await loadTechMessages()
+  } catch (err: any) {
+    errorMessage.value = err.response?.data?.message || 'Failed to delete action level'
+    showError.value = true
+  }
+}
+
+async function saveActionLevel() {
+  if (!actionFormRef.value?.validate()) return
+  if (!currentTechMessageId.value) return
+
+  savingActionLevel.value = true
+
+  try {
+    if (actionLevelEditMode.value && currentActionLevelId.value) {
+      // Update existing action level
+      await api.put(`/tech-messages/actions/${currentActionLevelId.value}`, actionFormData)
+      successMessage.value = 'Action level updated successfully'
+    } else {
+      // Create new action level
+      await api.post(`/tech-messages/${currentTechMessageId.value}/actions`, actionFormData)
+      successMessage.value = 'Action level added successfully'
+    }
+
+    showSuccess.value = true
+    closeActionLevelDialog()
+
+    // Reload action levels
+    const response = await api.get<TechMessage>(`/tech-messages/${currentTechMessageId.value}`)
+    actionLevels.value = response.data.actionLevels || []
+
+    await loadTechMessages()
+  } catch (err: any) {
+    errorMessage.value = err.response?.data?.message || 'Failed to save action level'
+    showError.value = true
+  } finally {
+    savingActionLevel.value = false
+  }
+}
+
+function closeActionLevelDialog() {
+  showActionLevelDialog.value = false
+  actionLevelEditMode.value = false
+  currentActionLevelId.value = null
+
+  // Reset form
+  actionFormData.occurrenceMin = 1
+  actionFormData.occurrenceMax = undefined
+  actionFormData.priority = 1
+  actionFormData.actionText = ''
+
+  actionFormRef.value?.resetValidation()
 }
 </script>
