@@ -1,43 +1,43 @@
 package com.igsl.opsfinder.mapper;
 
 import com.igsl.opsfinder.dto.request.ActionLevelRequest;
-import com.igsl.opsfinder.dto.request.ErrorMessageRequest;
+import com.igsl.opsfinder.dto.request.TechMessageRequest;
 import com.igsl.opsfinder.dto.response.ActionLevelResponse;
-import com.igsl.opsfinder.dto.response.ErrorMessageResponse;
+import com.igsl.opsfinder.dto.response.TechMessageResponse;
 import com.igsl.opsfinder.entity.ActionLevel;
-import com.igsl.opsfinder.entity.ErrorMessage;
+import com.igsl.opsfinder.entity.TechMessage;
 import org.mapstruct.*;
 
 /**
- * MapStruct mapper for ErrorMessage, ActionLevel entities and DTOs.
+ * MapStruct mapper for TechMessage, ActionLevel entities and DTOs.
  */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface ErrorMessageMapper {
+public interface TechMessageMapper {
 
     /**
-     * Convert ErrorMessage entity to ErrorMessageResponse DTO.
+     * Convert TechMessage entity to TechMessageResponse DTO.
      *
-     * @param errorMessage the error message entity
-     * @return error message response DTO
+     * @param techMessage the tech message entity
+     * @return tech message response DTO
      */
-    ErrorMessageResponse toResponse(ErrorMessage errorMessage);
+    TechMessageResponse toResponse(TechMessage techMessage);
 
     /**
-     * Convert ErrorMessageRequest DTO to ErrorMessage entity.
+     * Convert TechMessageRequest DTO to TechMessage entity.
      *
-     * @param request the error message request DTO
-     * @return error message entity
+     * @param request the tech message request DTO
+     * @return tech message entity
      */
-    ErrorMessage toEntity(ErrorMessageRequest request);
+    TechMessage toEntity(TechMessageRequest request);
 
     /**
-     * Update existing ErrorMessage entity from ErrorMessageRequest DTO.
+     * Update existing TechMessage entity from TechMessageRequest DTO.
      *
-     * @param request the error message request DTO with updated fields
-     * @param errorMessage the existing error message entity to update
+     * @param request the tech message request DTO with updated fields
+     * @param techMessage the existing tech message entity to update
      */
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void updateEntityFromRequest(ErrorMessageRequest request, @MappingTarget ErrorMessage errorMessage);
+    void updateEntityFromRequest(TechMessageRequest request, @MappingTarget TechMessage techMessage);
 
     /**
      * Convert ActionLevel entity to ActionLevelResponse DTO.

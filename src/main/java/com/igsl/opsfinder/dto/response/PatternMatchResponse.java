@@ -18,7 +18,7 @@ import java.util.Map;
 public class PatternMatchResponse {
 
     private boolean matched;
-    private ErrorMessageResponse errorMessage;
+    private TechMessageResponse techMessage;
     private String matchedText;
 
     @Builder.Default

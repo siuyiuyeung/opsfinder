@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * ErrorMessage entity representing an error pattern with regex matching.
+ * TechMessage entity representing a technical message pattern with regex matching.
  * Contains multiple action levels based on occurrence frequency.
  */
 @Entity
-@Table(name = "error_messages", indexes = {
-        @Index(name = "idx_error_messages_category", columnList = "category"),
-        @Index(name = "idx_error_messages_severity", columnList = "severity")
+@Table(name = "tech_messages", indexes = {
+        @Index(name = "idx_tech_messages_category", columnList = "category"),
+        @Index(name = "idx_tech_messages_severity", columnList = "severity")
 })
 @Getter
 @Setter
@@ -25,10 +25,10 @@ import java.util.List;
 @Builder
 @ToString(callSuper = true, exclude = "actionLevels")
 @EqualsAndHashCode(callSuper = true, exclude = "actionLevels")
-public class ErrorMessage extends BaseEntity {
+public class TechMessage extends BaseEntity {
 
     /**
-     * Error category (e.g., Network, Database, Application).
+     * Message category (e.g., Network, Database, Application).
      */
     @NotBlank(message = "Category is required")
     @Size(max = 100, message = "Category must not exceed 100 characters")
@@ -36,7 +36,7 @@ public class ErrorMessage extends BaseEntity {
     private String category;
 
     /**
-     * Severity level of the error.
+     * Severity level of the message.
      */
     @NotNull(message = "Severity is required")
     @Enumerated(EnumType.STRING)
@@ -44,7 +44,7 @@ public class ErrorMessage extends BaseEntity {
     private Severity severity;
 
     /**
-     * Regular expression pattern to match error messages.
+     * Regular expression pattern to match technical messages.
      * Can include named groups for extracting variables.
      */
     @NotBlank(message = "Pattern is required")
@@ -52,21 +52,21 @@ public class ErrorMessage extends BaseEntity {
     private String pattern;
 
     /**
-     * Human-readable description of the error.
+     * Human-readable description of the tech message.
      */
     @Column(columnDefinition = "TEXT")
     private String description;
 
     /**
-     * Action levels associated with this error message.
+     * Action levels associated with this tech message.
      * Multiple levels can be defined based on occurrence frequency.
      */
-    @OneToMany(mappedBy = "errorMessage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "techMessage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<ActionLevel> actionLevels = new ArrayList<>();
 
     /**
-     * Severity levels for error messages.
+     * Severity levels for tech messages.
      */
     public enum Severity {
         LOW,
@@ -76,22 +76,22 @@ public class ErrorMessage extends BaseEntity {
     }
 
     /**
-     * Add an action level to this error message.
+     * Add an action level to this tech message.
      *
      * @param actionLevel the action level to add
      */
     public void addActionLevel(ActionLevel actionLevel) {
         actionLevels.add(actionLevel);
-        actionLevel.setErrorMessage(this);
+        actionLevel.setTechMessage(this);
     }
 
     /**
-     * Remove an action level from this error message.
+     * Remove an action level from this tech message.
      *
      * @param actionLevel the action level to remove
      */
     public void removeActionLevel(ActionLevel actionLevel) {
         actionLevels.remove(actionLevel);
-        actionLevel.setErrorMessage(null);
+        actionLevel.setTechMessage(null);
     }
 }

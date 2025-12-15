@@ -7,12 +7,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 /**
- * ActionLevel entity representing a specific action to take based on error occurrence frequency.
- * Multiple action levels can exist for a single error message.
+ * ActionLevel entity representing a specific action to take based on message occurrence frequency.
+ * Multiple action levels can exist for a single tech message.
  */
 @Entity
 @Table(name = "action_levels", indexes = {
-        @Index(name = "idx_action_levels_error_message", columnList = "error_message_id"),
+        @Index(name = "idx_action_levels_tech_message", columnList = "tech_message_id"),
         @Index(name = "idx_action_levels_priority", columnList = "priority")
 })
 @Getter
@@ -20,17 +20,17 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(callSuper = true, exclude = "errorMessage")
-@EqualsAndHashCode(callSuper = true, exclude = "errorMessage")
+@ToString(callSuper = true, exclude = "techMessage")
+@EqualsAndHashCode(callSuper = true, exclude = "techMessage")
 public class ActionLevel extends BaseEntity {
 
     /**
-     * Reference to the parent error message.
+     * Reference to the parent tech message.
      */
-    @NotNull(message = "Error message is required")
+    @NotNull(message = "Tech message is required")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "error_message_id", nullable = false, foreignKey = @ForeignKey(name = "fk_action_level_error_message"))
-    private ErrorMessage errorMessage;
+    @JoinColumn(name = "tech_message_id", nullable = false, foreignKey = @ForeignKey(name = "fk_action_level_tech_message"))
+    private TechMessage techMessage;
 
     /**
      * Minimum number of occurrences for this action level to apply.
@@ -67,7 +67,7 @@ public class ActionLevel extends BaseEntity {
     /**
      * Check if this action level applies for the given occurrence count.
      *
-     * @param occurrenceCount the number of times the error has occurred
+     * @param occurrenceCount the number of times the message has occurred
      * @return true if this action level applies
      */
     public boolean appliesTo(int occurrenceCount) {

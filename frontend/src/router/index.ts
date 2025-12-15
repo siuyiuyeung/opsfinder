@@ -27,9 +27,9 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
-    path: '/errors',
-    name: 'Errors',
-    component: () => import('@/views/ErrorListView.vue'),
+    path: '/tech-messages',
+    name: 'TechMessages',
+    component: () => import('@/views/TechMessageListView.vue'),
     meta: { requiresAuth: true },
   },
   {

@@ -1,6 +1,6 @@
 package com.igsl.opsfinder.util;
 
-import com.igsl.opsfinder.entity.ErrorMessage;
+import com.igsl.opsfinder.entity.TechMessage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * Utility class for matching error messages against regex patterns.
+ * Utility class for matching technical messages against regex patterns.
  * Extracts named groups from patterns as variables.
  */
 @Component
@@ -25,47 +25,47 @@ import java.util.regex.PatternSyntaxException;
 public class PatternMatcher {
 
     /**
-     * Match error text against a list of error message patterns.
+     * Match text against a list of tech message patterns.
      *
-     * @param errorText the error text to match
-     * @param errorMessages list of error messages with regex patterns
-     * @return optional match result containing the matched error message and extracted variables
+     * @param errorText the text to match
+     * @param techMessages list of tech messages with regex patterns
+     * @return optional match result containing the matched tech message and extracted variables
      */
-    public Optional<MatchResult> matchError(String errorText, List<ErrorMessage> errorMessages) {
+    public Optional<MatchResult> matchMessage(String errorText, List<TechMessage> techMessages) {
         if (errorText == null || errorText.isBlank()) {
-            log.debug("Error text is null or blank, no match possible");
+            log.debug("Text is null or blank, no match possible");
             return Optional.empty();
         }
 
-        for (ErrorMessage errorMessage : errorMessages) {
+        for (TechMessage techMessage : techMessages) {
             try {
-                Pattern pattern = Pattern.compile(errorMessage.getPattern(), Pattern.DOTALL);
+                Pattern pattern = Pattern.compile(techMessage.getPattern(), Pattern.DOTALL);
                 Matcher matcher = pattern.matcher(errorText);
 
                 if (matcher.find()) {
-                    log.debug("Matched error message ID {} with pattern: {}",
-                            errorMessage.getId(), errorMessage.getPattern());
+                    log.debug("Matched tech message ID {} with pattern: {}",
+                            techMessage.getId(), techMessage.getPattern());
 
                     // Extract named groups as variables
                     Map<String, String> variables = extractNamedGroups(matcher);
 
                     return Optional.of(MatchResult.builder()
-                            .errorMessage(errorMessage)
+                            .techMessage(techMessage)
                             .variables(variables)
                             .matchedText(matcher.group(0))
                             .build());
                 }
             } catch (PatternSyntaxException e) {
-                log.error("Invalid regex pattern for error message ID {}: {}",
-                        errorMessage.getId(), e.getMessage());
+                log.error("Invalid regex pattern for tech message ID {}: {}",
+                        techMessage.getId(), e.getMessage());
                 // Continue trying other patterns
             } catch (Exception e) {
-                log.error("Error matching pattern for error message ID {}: {}",
-                        errorMessage.getId(), e.getMessage());
+                log.error("Error matching pattern for tech message ID {}: {}",
+                        techMessage.getId(), e.getMessage());
             }
         }
 
-        log.debug("No pattern matched for error text: {}", errorText);
+        log.debug("No pattern matched for text: {}", errorText);
         return Optional.empty();
     }
 
@@ -134,7 +134,7 @@ public class PatternMatcher {
     @AllArgsConstructor
     @Builder
     public static class MatchResult {
-        private ErrorMessage errorMessage;
+        private TechMessage techMessage;
         private Map<String, String> variables;
         private String matchedText;
     }

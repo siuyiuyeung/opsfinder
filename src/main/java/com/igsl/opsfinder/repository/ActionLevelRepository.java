@@ -15,56 +15,56 @@ import java.util.List;
 public interface ActionLevelRepository extends JpaRepository<ActionLevel, Long> {
 
     /**
-     * Find action levels by error message ID.
+     * Find action levels by tech message ID.
      *
-     * @param errorMessageId the error message ID
+     * @param techMessageId the tech message ID
      * @return list of action levels
      */
-    List<ActionLevel> findByErrorMessageId(Long errorMessageId);
+    List<ActionLevel> findByTechMessageId(Long techMessageId);
 
     /**
      * Find action levels that apply for a specific occurrence count.
      *
-     * @param errorMessageId the error message ID
+     * @param techMessageId the tech message ID
      * @param occurrenceCount the number of occurrences
      * @return list of matching action levels, ordered by priority descending
      */
     @Query("""
             SELECT al FROM ActionLevel al
-            WHERE al.errorMessage.id = :errorMessageId
+            WHERE al.techMessage.id = :techMessageId
             AND al.occurrenceMin <= :occurrenceCount
             AND (al.occurrenceMax IS NULL OR al.occurrenceMax >= :occurrenceCount)
             ORDER BY al.priority DESC, al.occurrenceMin DESC
             """)
-    List<ActionLevel> findByErrorMessageIdAndOccurrenceRange(
-            @Param("errorMessageId") Long errorMessageId,
+    List<ActionLevel> findByTechMessageIdAndOccurrenceRange(
+            @Param("techMessageId") Long techMessageId,
             @Param("occurrenceCount") int occurrenceCount
     );
 
     /**
      * Find the highest priority action level for a specific occurrence count.
      *
-     * @param errorMessageId the error message ID
+     * @param techMessageId the tech message ID
      * @param occurrenceCount the number of occurrences
      * @return list with the top matching action level (limited to 1)
      */
     @Query(value = """
             SELECT al FROM ActionLevel al
-            WHERE al.errorMessage.id = :errorMessageId
+            WHERE al.techMessage.id = :techMessageId
             AND al.occurrenceMin <= :occurrenceCount
             AND (al.occurrenceMax IS NULL OR al.occurrenceMax >= :occurrenceCount)
             ORDER BY al.priority DESC, al.occurrenceMin DESC
             LIMIT 1
             """)
     List<ActionLevel> findTopPriorityActionLevel(
-            @Param("errorMessageId") Long errorMessageId,
+            @Param("techMessageId") Long techMessageId,
             @Param("occurrenceCount") int occurrenceCount
     );
 
     /**
-     * Delete all action levels for a specific error message.
+     * Delete all action levels for a specific tech message.
      *
-     * @param errorMessageId the error message ID
+     * @param techMessageId the tech message ID
      */
-    void deleteByErrorMessageId(Long errorMessageId);
+    void deleteByTechMessageId(Long techMessageId);
 }

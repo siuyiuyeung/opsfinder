@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003b-rename-error-messages-to-tech-messages
+      author: claude
+      changes:
+        # Step 1: Rename table from error_messages to tech_messages
+        - renameTable:
+            oldTableName: error_messages
+            newTableName: tech_messages
+
+        # Step 2: Rename indexes on tech_messages table
+        - sql:
+            sql: ALTER INDEX idx_error_messages_category RENAME TO idx_tech_messages_category;
+            rollback: ALTER INDEX idx_tech_messages_category RENAME TO idx_error_messages_category;
+
+        - sql:
+            sql: ALTER INDEX idx_error_messages_severity RENAME TO idx_tech_messages_severity;
+            rollback: ALTER INDEX idx_tech_messages_severity RENAME TO idx_error_messages_severity;
+
+        # Step 3: Rename column in action_levels table
+        - renameColumn:
+            tableName: action_levels
+            oldColumnName: error_message_id
+            newColumnName: tech_message_id
+            columnDataType: BIGINT
+
+        # Step 4: Rename index on action_levels table
+        - sql:
+            sql: ALTER INDEX idx_action_levels_error_message RENAME TO idx_action_levels_tech_message;
+            rollback: ALTER INDEX idx_action_levels_tech_message RENAME TO idx_action_levels_error_message;
+
+        # Step 5: Update foreign key constraint
+        - dropForeignKeyConstraint:
+            baseTableName: action_levels
+            constraintName: fk_action_level_error_message
+
+        - addForeignKeyConstraint:
+            baseTableName: action_levels
+            baseColumnNames: tech_message_id
+            constraintName: fk_action_level_tech_message
+            referencedTableName: tech_messages
+            referencedColumnNames: id
+            onDelete: CASCADE

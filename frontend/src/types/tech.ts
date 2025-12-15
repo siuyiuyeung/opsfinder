@@ -1,5 +1,5 @@
 /**
- * Error message severity levels.
+ * Tech message severity levels.
  */
 export type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 
@@ -16,9 +16,9 @@ export interface ActionLevel {
 }
 
 /**
- * Error message interface.
+ * Tech message interface.
  */
-export interface ErrorMessage {
+export interface TechMessage {
   id: number
   category: string
   severity: Severity
@@ -30,9 +30,9 @@ export interface ErrorMessage {
 }
 
 /**
- * Error message request for create/update.
+ * Tech message request for create/update.
  */
-export interface ErrorMessageRequest {
+export interface TechMessageRequest {
   category: string
   severity: Severity
   pattern: string
@@ -54,7 +54,7 @@ export interface ActionLevelRequest {
  */
 export interface PatternMatchResponse {
   matched: boolean
-  errorMessage?: ErrorMessage
+  techMessage?: TechMessage
   matchedText?: string
   variables?: Record<string, string>
   recommendedAction?: string

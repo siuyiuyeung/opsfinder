@@ -1,12 +1,12 @@
 package com.igsl.opsfinder.controller;
 
 import com.igsl.opsfinder.dto.request.ActionLevelRequest;
-import com.igsl.opsfinder.dto.request.ErrorMessageRequest;
+import com.igsl.opsfinder.dto.request.TechMessageRequest;
 import com.igsl.opsfinder.dto.response.ActionLevelResponse;
-import com.igsl.opsfinder.dto.response.ErrorMessageResponse;
+import com.igsl.opsfinder.dto.response.TechMessageResponse;
 import com.igsl.opsfinder.dto.response.PatternMatchResponse;
-import com.igsl.opsfinder.entity.ErrorMessage;
-import com.igsl.opsfinder.service.ErrorMessageService;
+import com.igsl.opsfinder.entity.TechMessage;
+import com.igsl.opsfinder.service.TechMessageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,19 +22,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * REST controller for error message management operations.
+ * REST controller for tech message management operations.
  * Endpoints are protected with role-based access control.
  */
 @RestController
-@RequestMapping("/api/errors")
+@RequestMapping("/api/tech-messages")
 @RequiredArgsConstructor
 @Slf4j
-public class ErrorMessageController {
+public class TechMessageController {
 
-    private final ErrorMessageService errorMessageService;
+    private final TechMessageService techMessageService;
 
     /**
-     * Get all error messages with pagination and filtering.
+     * Get all tech messages with pagination and filtering.
      * Accessible by all authenticated users.
      *
      * @param category optional category filter
@@ -42,18 +42,18 @@ public class ErrorMessageController {
      * @param page page number (0-indexed)
      * @param size page size
      * @param sort sort field and direction
-     * @return page of error message responses
+     * @return page of tech message responses
      */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<ErrorMessageResponse>> getAllErrorMessages(
+    public ResponseEntity<Page<TechMessageResponse>> getAllTechMessages(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String severity,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id,desc") String sort) {
 
-        log.info("Get all error messages request - category: {}, severity: {}, page: {}, size: {}",
+        log.info("Get all tech messages request - category: {}, severity: {}, page: {}, size: {}",
                 category, severity, page, size);
 
         String[] sortParams = sort.split(",");
@@ -61,35 +61,35 @@ public class ErrorMessageController {
                 ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
 
-        Page<ErrorMessageResponse> errorMessages;
+        Page<TechMessageResponse> techMessages;
         if (category != null && severity != null) {
-            errorMessages = errorMessageService.getErrorMessagesByCategoryAndSeverity(
-                    category, ErrorMessage.Severity.valueOf(severity), pageable);
+            techMessages = techMessageService.getTechMessagesByCategoryAndSeverity(
+                    category, TechMessage.Severity.valueOf(severity), pageable);
         } else if (category != null) {
-            errorMessages = errorMessageService.getErrorMessagesByCategory(category, pageable);
+            techMessages = techMessageService.getTechMessagesByCategory(category, pageable);
         } else if (severity != null) {
-            errorMessages = errorMessageService.getErrorMessagesBySeverity(
-                    ErrorMessage.Severity.valueOf(severity), pageable);
+            techMessages = techMessageService.getTechMessagesBySeverity(
+                    TechMessage.Severity.valueOf(severity), pageable);
         } else {
-            errorMessages = errorMessageService.getAllErrorMessages(pageable);
+            techMessages = techMessageService.getAllTechMessages(pageable);
         }
 
-        return ResponseEntity.ok(errorMessages);
+        return ResponseEntity.ok(techMessages);
     }
 
     /**
-     * Get error message by ID.
+     * Get tech message by ID.
      * Accessible by all authenticated users.
      *
-     * @param id error message ID
-     * @return error message response with action levels
+     * @param id tech message ID
+     * @return tech message response with action levels
      */
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ErrorMessageResponse> getErrorMessageById(@PathVariable Long id) {
-        log.info("Get error message by ID request - id: {}", id);
-        ErrorMessageResponse errorMessage = errorMessageService.getErrorMessageById(id);
-        return ResponseEntity.ok(errorMessage);
+    public ResponseEntity<TechMessageResponse> getTechMessageById(@PathVariable Long id) {
+        log.info("Get tech message by ID request - id: {}", id);
+        TechMessageResponse techMessage = techMessageService.getTechMessageById(id);
+        return ResponseEntity.ok(techMessage);
     }
 
     /**
@@ -102,76 +102,76 @@ public class ErrorMessageController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<String>> getDistinctCategories() {
         log.info("Get distinct categories request");
-        List<String> categories = errorMessageService.getDistinctCategories();
+        List<String> categories = techMessageService.getDistinctCategories();
         return ResponseEntity.ok(categories);
     }
 
     /**
-     * Create a new error message.
+     * Create a new tech message.
      * Accessible by ADMIN role only.
      *
-     * @param request error message creation request
-     * @return created error message response
+     * @param request tech message creation request
+     * @return created tech message response
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ErrorMessageResponse> createErrorMessage(@Valid @RequestBody ErrorMessageRequest request) {
-        log.info("Create error message request - category: {}, severity: {}",
+    public ResponseEntity<TechMessageResponse> createTechMessage(@Valid @RequestBody TechMessageRequest request) {
+        log.info("Create tech message request - category: {}, severity: {}",
                 request.getCategory(), request.getSeverity());
-        ErrorMessageResponse errorMessage = errorMessageService.createErrorMessage(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(errorMessage);
+        TechMessageResponse techMessage = techMessageService.createTechMessage(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(techMessage);
     }
 
     /**
-     * Update an existing error message.
+     * Update an existing tech message.
      * Accessible by ADMIN role only.
      *
-     * @param id error message ID
-     * @param request error message update request
-     * @return updated error message response
+     * @param id tech message ID
+     * @param request tech message update request
+     * @return updated tech message response
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ErrorMessageResponse> updateErrorMessage(
+    public ResponseEntity<TechMessageResponse> updateTechMessage(
             @PathVariable Long id,
-            @Valid @RequestBody ErrorMessageRequest request) {
+            @Valid @RequestBody TechMessageRequest request) {
 
-        log.info("Update error message request - id: {}", id);
-        ErrorMessageResponse errorMessage = errorMessageService.updateErrorMessage(id, request);
-        return ResponseEntity.ok(errorMessage);
+        log.info("Update tech message request - id: {}", id);
+        TechMessageResponse techMessage = techMessageService.updateTechMessage(id, request);
+        return ResponseEntity.ok(techMessage);
     }
 
     /**
-     * Delete an error message by ID.
+     * Delete a tech message by ID.
      * Accessible by ADMIN role only.
      *
-     * @param id error message ID
+     * @param id tech message ID
      * @return no content response
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteErrorMessage(@PathVariable Long id) {
-        log.info("Delete error message request - id: {}", id);
-        errorMessageService.deleteErrorMessage(id);
+    public ResponseEntity<Void> deleteTechMessage(@PathVariable Long id) {
+        log.info("Delete tech message request - id: {}", id);
+        techMessageService.deleteTechMessage(id);
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * Add an action level to an error message.
+     * Add an action level to a tech message.
      * Accessible by ADMIN role only.
      *
-     * @param errorMessageId the error message ID
+     * @param techMessageId the tech message ID
      * @param request action level request
      * @return created action level response
      */
-    @PostMapping("/{errorMessageId}/actions")
+    @PostMapping("/{techMessageId}/actions")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ActionLevelResponse> addActionLevel(
-            @PathVariable Long errorMessageId,
+            @PathVariable Long techMessageId,
             @Valid @RequestBody ActionLevelRequest request) {
 
-        log.info("Add action level to error message ID: {}", errorMessageId);
-        ActionLevelResponse actionLevel = errorMessageService.addActionLevel(errorMessageId, request);
+        log.info("Add action level to tech message ID: {}", techMessageId);
+        ActionLevelResponse actionLevel = techMessageService.addActionLevel(techMessageId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(actionLevel);
     }
 
@@ -190,7 +190,7 @@ public class ErrorMessageController {
             @Valid @RequestBody ActionLevelRequest request) {
 
         log.info("Update action level request - id: {}", actionLevelId);
-        ActionLevelResponse actionLevel = errorMessageService.updateActionLevel(actionLevelId, request);
+        ActionLevelResponse actionLevel = techMessageService.updateActionLevel(actionLevelId, request);
         return ResponseEntity.ok(actionLevel);
     }
 
@@ -205,52 +205,52 @@ public class ErrorMessageController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteActionLevel(@PathVariable Long actionLevelId) {
         log.info("Delete action level request - id: {}", actionLevelId);
-        errorMessageService.deleteActionLevel(actionLevelId);
+        techMessageService.deleteActionLevel(actionLevelId);
         return ResponseEntity.noContent().build();
     }
 
     /**
-     * Match error text against all error message patterns.
+     * Match text against all tech message patterns.
      * Accessible by all authenticated users.
      *
-     * @param errorText the error text to match
-     * @return pattern match response with matched error message and recommended action
+     * @param errorText the text to match
+     * @return pattern match response with matched tech message and recommended action
      */
     @PostMapping("/match")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<PatternMatchResponse> matchErrorText(@RequestBody String errorText) {
-        log.info("Match error text request");
-        PatternMatchResponse matchResponse = errorMessageService.matchErrorText(errorText);
+    public ResponseEntity<PatternMatchResponse> matchText(@RequestBody String errorText) {
+        log.info("Match text request");
+        PatternMatchResponse matchResponse = techMessageService.matchText(errorText);
         return ResponseEntity.ok(matchResponse);
     }
 
     /**
-     * Get error count by category.
+     * Get message count by category.
      * Accessible by all authenticated users.
      *
      * @param category category name
-     * @return error count
+     * @return message count
      */
     @GetMapping("/stats/category/{category}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Long> countErrorsByCategory(@PathVariable String category) {
-        log.info("Count errors by category request - category: {}", category);
-        long count = errorMessageService.countErrorsByCategory(category);
+    public ResponseEntity<Long> countMessagesByCategory(@PathVariable String category) {
+        log.info("Count messages by category request - category: {}", category);
+        long count = techMessageService.countMessagesByCategory(category);
         return ResponseEntity.ok(count);
     }
 
     /**
-     * Get error count by severity.
+     * Get message count by severity.
      * Accessible by all authenticated users.
      *
      * @param severity severity level
-     * @return error count
+     * @return message count
      */
     @GetMapping("/stats/severity/{severity}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Long> countErrorsBySeverity(@PathVariable String severity) {
-        log.info("Count errors by severity request - severity: {}", severity);
-        long count = errorMessageService.countErrorsBySeverity(ErrorMessage.Severity.valueOf(severity));
+    public ResponseEntity<Long> countMessagesBySeverity(@PathVariable String severity) {
+        log.info("Count messages by severity request - severity: {}", severity);
+        long count = techMessageService.countMessagesBySeverity(TechMessage.Severity.valueOf(severity));
         return ResponseEntity.ok(count);
     }
 }

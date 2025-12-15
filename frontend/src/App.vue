@@ -15,7 +15,7 @@ const handleLogout = async () => {
 const navigationItems = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/' },
   { title: 'Devices', icon: 'mdi-server', to: '/devices' },
-  { title: 'Error Messages', icon: 'mdi-alert-circle', to: '/errors' },
+  { title: 'Tech Messages', icon: 'mdi-alert-circle', to: '/tech-messages' },
   { title: 'Incidents', icon: 'mdi-file-document-alert', to: '/incidents' },
 ]
 </script>

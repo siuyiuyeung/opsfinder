@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Utility class for analyzing error occurrence frequency and determining appropriate actions.
+ * Utility class for analyzing message occurrence frequency and determining appropriate actions.
  */
 @Component
 @RequiredArgsConstructor
@@ -23,20 +23,20 @@ public class FrequencyAnalyzer {
      * Determine the appropriate action level based on occurrence count.
      * Returns the highest priority action level that matches the occurrence count.
      *
-     * @param errorMessageId the error message ID
-     * @param occurrenceCount the number of times the error has occurred
+     * @param techMessageId the tech message ID
+     * @param occurrenceCount the number of times the message has occurred
      * @return optional action level, empty if no matching level found
      */
-    public Optional<ActionLevel> determineActionLevel(Long errorMessageId, int occurrenceCount) {
-        log.debug("Determining action level for error message ID {} with {} occurrences",
-                errorMessageId, occurrenceCount);
+    public Optional<ActionLevel> determineActionLevel(Long techMessageId, int occurrenceCount) {
+        log.debug("Determining action level for tech message ID {} with {} occurrences",
+                techMessageId, occurrenceCount);
 
         List<ActionLevel> matchingLevels = actionLevelRepository
-                .findByErrorMessageIdAndOccurrenceRange(errorMessageId, occurrenceCount);
+                .findByTechMessageIdAndOccurrenceRange(techMessageId, occurrenceCount);
 
         if (matchingLevels.isEmpty()) {
-            log.warn("No action level found for error message ID {} with {} occurrences",
-                    errorMessageId, occurrenceCount);
+            log.warn("No action level found for tech message ID {} with {} occurrences",
+                    techMessageId, occurrenceCount);
             return Optional.empty();
         }
 
@@ -52,39 +52,39 @@ public class FrequencyAnalyzer {
      * Get all matching action levels for an occurrence count.
      * Useful for showing all possible actions.
      *
-     * @param errorMessageId the error message ID
-     * @param occurrenceCount the number of times the error has occurred
+     * @param techMessageId the tech message ID
+     * @param occurrenceCount the number of times the message has occurred
      * @return list of matching action levels, ordered by priority descending
      */
-    public List<ActionLevel> getAllMatchingActionLevels(Long errorMessageId, int occurrenceCount) {
-        log.debug("Getting all matching action levels for error message ID {} with {} occurrences",
-                errorMessageId, occurrenceCount);
+    public List<ActionLevel> getAllMatchingActionLevels(Long techMessageId, int occurrenceCount) {
+        log.debug("Getting all matching action levels for tech message ID {} with {} occurrences",
+                techMessageId, occurrenceCount);
 
-        return actionLevelRepository.findByErrorMessageIdAndOccurrenceRange(errorMessageId, occurrenceCount);
+        return actionLevelRepository.findByTechMessageIdAndOccurrenceRange(techMessageId, occurrenceCount);
     }
 
     /**
      * Check if an action level exists for a specific occurrence count.
      *
-     * @param errorMessageId the error message ID
+     * @param techMessageId the tech message ID
      * @param occurrenceCount the number of occurrences
      * @return true if at least one action level matches
      */
-    public boolean hasActionLevel(Long errorMessageId, int occurrenceCount) {
+    public boolean hasActionLevel(Long techMessageId, int occurrenceCount) {
         List<ActionLevel> levels = actionLevelRepository
-                .findByErrorMessageIdAndOccurrenceRange(errorMessageId, occurrenceCount);
+                .findByTechMessageIdAndOccurrenceRange(techMessageId, occurrenceCount);
         return !levels.isEmpty();
     }
 
     /**
      * Get the recommended action text for a specific occurrence count.
      *
-     * @param errorMessageId the error message ID
+     * @param techMessageId the tech message ID
      * @param occurrenceCount the number of occurrences
      * @return optional action text, empty if no matching level found
      */
-    public Optional<String> getRecommendedAction(Long errorMessageId, int occurrenceCount) {
-        return determineActionLevel(errorMessageId, occurrenceCount)
+    public Optional<String> getRecommendedAction(Long techMessageId, int occurrenceCount) {
+        return determineActionLevel(techMessageId, occurrenceCount)
                 .map(ActionLevel::getActionText);
     }
 }

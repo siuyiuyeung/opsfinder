@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**OpsFinder** is a Production Operations Knowledge Base & Incident Tracking System - a mobile-first PWA web application for managing device/VM inventory, error message knowledge base, and production incident tracking with real-time notifications.
+**OpsFinder** is a Production Operations Knowledge Base & Incident Tracking System - a mobile-first PWA web application for managing device/VM inventory, tech message knowledge base, and production incident tracking with real-time notifications.
 
 **Current State**: Fresh Spring Boot 4.0.0 project with minimal setup (only starter dependencies)
 
@@ -52,7 +52,7 @@ Controllers → Services → Repositories → Entities
 
 ### Key Features
 1. **Device/VM Inventory** (<10K devices) - Full-text keyword search
-2. **Error Message Knowledge Base** - Regex pattern matching, multi-level actions
+2. **Tech Message Knowledge Base** - Regex pattern matching, multi-level actions
 3. **Incident Tracking** - Production error logging with staff responses
 4. **Real-time Notifications** - WebSocket push for new incidents
 5. **PWA Offline Support** - Service Worker + IndexedDB with sync queue
@@ -65,7 +65,7 @@ Controllers → Services → Repositories → Entities
 ### Tables
 1. **users** - Authentication (username, password, role)
 2. **devices** - VM/device inventory with search_vector (ts_vector) for full-text search
-3. **error_messages** - Error patterns (regex), categories, severity
+3. **tech_messages** - Tech message patterns (regex), categories, severity
 4. **action_levels** - Multi-level actions based on occurrence frequency
 5. **incidents** - Production error occurrences with JSONB for error variables
 
@@ -119,9 +119,9 @@ Controllers → Services → Repositories → Entities
 
 ---
 
-### Phase 3: Error Knowledge Base (Week 3) ⏳ PARTIAL
+### Phase 3: Tech Message Knowledge Base (Week 3) ⏳ PARTIAL
 
-**Objective**: Build error message KB with regex pattern matching
+**Objective**: Build tech message KB with regex pattern matching
 
 **Backend Tasks**: ✅ Complete
 **Frontend Tasks**: ✓ Partial (read-only views complete, create/edit forms stubbed)
@@ -155,9 +155,9 @@ Controllers → Services → Repositories → Entities
 ## Progress Tracking
 
 ### Current Status
-- **Active Phase**: Phase 3 - Error Knowledge Base (partial) / Phase 4 - Incident Tracking (next)
+- **Active Phase**: Phase 3 - Tech Message Knowledge Base (partial) / Phase 4 - Incident Tracking (next)
 - **Completion**: Phases 1-2 complete, Phase 3 read-only complete
-- **Next Steps**: Complete Error KB forms OR implement Incident tracking
+- **Next Steps**: Complete Tech Message KB forms OR implement Incident tracking
 
 ### Phase Completion Checklist
 
@@ -232,10 +232,10 @@ OpsFinder/
 
 ## Implementation Notes
 
-### What's Working (2025-12-11)
+### What's Working (2025-12-15)
 - ✅ Full authentication flow with JWT token refresh
 - ✅ Device CRUD with full-text search, filters, and pagination
-- ✅ Error KB read-only interface with filtering
+- ✅ Tech Message KB read-only interface with filtering
 - ✅ Role-based access control (Admin, Operator, Viewer)
 - ✅ Docker multi-stage build with Nginx reverse proxy
 - ✅ Production-ready deployment configuration
@@ -243,9 +243,11 @@ OpsFinder/
   - See: `docs/task/configure-cors-from-env.md`
 - ✅ **Fixed SQL syntax error in full-text search** - Removed duplicate ORDER BY clause (2025-12-12)
   - See: `docs/task/fix-duplicate-order-by-sql-error.md`
+- ✅ **Renamed "Error Knowledge Base" to "Tech Message"** - Comprehensive refactoring removing all "error" terminology from domain code (2025-12-15)
+  - See: `docs/task/rename-error-to-tech-message.md`
 
 ### What's Stubbed
-- ⏳ Error KB create/edit forms (UI commented as "coming soon")
+- ⏳ Tech Message KB create/edit forms (UI commented as "coming soon")
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)
 
 ### What's Not Started
@@ -254,7 +256,7 @@ OpsFinder/
 - ⏳ IndexedDB offline sync queue (Dexie installed)
 
 ### Recommended Next Steps
-1. **Option A - Complete Phase 3**: Implement Error KB create/edit forms
+1. **Option A - Complete Phase 3**: Implement Tech Message KB create/edit forms
 2. **Option B - Start Phase 4**: Build incident tracking with real-time notifications
 3. **Option C - Start Phase 5**: Configure PWA offline-first architecture
 

@@ -1,6 +1,6 @@
 package com.igsl.opsfinder.dto.response;
 
-import com.igsl.opsfinder.entity.ErrorMessage;
+import com.igsl.opsfinder.entity.TechMessage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,17 +11,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DTO for error message responses in API endpoints.
+ * DTO for tech message responses in API endpoints.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ErrorMessageResponse {
+public class TechMessageResponse {
 
     private Long id;
     private String category;
-    private ErrorMessage.Severity severity;
+    private TechMessage.Severity severity;
     private String pattern;
     private String description;
     private LocalDateTime createdAt;
