@@ -31,28 +31,24 @@ public class DeviceController {
 
     /**
      * Search devices by keyword using full-text search.
+     * Results are ordered by relevance (ts_rank) from PostgreSQL full-text search.
      * Accessible by all authenticated users.
      *
      * @param q search term
      * @param page page number (0-indexed)
      * @param size page size
-     * @param sort sort field and direction (e.g., "zone,asc")
-     * @return page of device responses
+     * @return page of device responses ordered by relevance
      */
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<DeviceResponse>> searchDevices(
             @RequestParam String q,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "id,desc") String sort) {
+            @RequestParam(defaultValue = "20") int size) {
 
         log.info("Search devices request - term: {}, page: {}, size: {}", q, page, size);
 
-        String[] sortParams = sort.split(",");
-        Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc")
-                ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
+        Pageable pageable = PageRequest.of(page, size);
 
         Page<DeviceResponse> devices = deviceService.searchDevices(q, pageable);
         return ResponseEntity.ok(devices);

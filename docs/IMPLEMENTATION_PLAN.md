@@ -241,6 +241,8 @@ OpsFinder/
 - ✅ Production-ready deployment configuration
 - ✅ **CORS environment configuration** - ALLOWED_ORIGINS now reads from environment variables (2025-12-11)
   - See: `docs/task/configure-cors-from-env.md`
+- ✅ **Fixed SQL syntax error in full-text search** - Removed duplicate ORDER BY clause (2025-12-12)
+  - See: `docs/task/fix-duplicate-order-by-sql-error.md`
 
 ### What's Stubbed
 - ⏳ Error KB create/edit forms (UI commented as "coming soon")

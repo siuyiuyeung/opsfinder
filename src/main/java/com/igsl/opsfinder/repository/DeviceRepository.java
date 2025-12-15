@@ -21,14 +21,19 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
      * Results are ranked by relevance using ts_rank.
      *
      * @param searchTerm the search keyword(s)
-     * @param pageable pagination and sorting parameters
+     * @param pageable pagination parameters (no custom sort applied - results ordered by relevance)
      * @return page of devices matching the search term, ordered by relevance
      */
     @Query(value = """
             SELECT d.* FROM devices d
             WHERE d.search_vector @@ plainto_tsquery('english', :searchTerm)
             ORDER BY ts_rank(d.search_vector, plainto_tsquery('english', :searchTerm)) DESC
-            """, nativeQuery = true)
+            """,
+            countQuery = """
+            SELECT COUNT(*) FROM devices d
+            WHERE d.search_vector @@ plainto_tsquery('english', :searchTerm)
+            """,
+            nativeQuery = true)
     Page<Device> searchDevices(@Param("searchTerm") String searchTerm, Pageable pageable);
 
     /**
