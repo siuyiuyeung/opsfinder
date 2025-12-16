@@ -29,7 +29,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/tech-messages',
     name: 'TechMessages',
-    component: () => import('@/views/TechMessageListView.vue'),
+    component: () => import('@/views/TechMessageSearchView.vue'),
     meta: { requiresAuth: true },
   },
   {

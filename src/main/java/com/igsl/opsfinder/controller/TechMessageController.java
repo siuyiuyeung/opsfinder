@@ -1,5 +1,7 @@
 package com.igsl.opsfinder.controller;
 
+import com.igsl.opsfinder.dto.TechMessageSearchRequest;
+import com.igsl.opsfinder.dto.TechMessageSearchResponse;
 import com.igsl.opsfinder.dto.request.ActionLevelRequest;
 import com.igsl.opsfinder.dto.request.TechMessageRequest;
 import com.igsl.opsfinder.dto.response.ActionLevelResponse;
@@ -252,5 +254,25 @@ public class TechMessageController {
         log.info("Count messages by severity request - severity: {}", severity);
         long count = techMessageService.countMessagesBySeverity(TechMessage.Severity.valueOf(severity));
         return ResponseEntity.ok(count);
+    }
+
+    /**
+     * Search tech messages using fuzzy keyword search and/or exact pattern matching.
+     * Supports hybrid search for quick incident lookup.
+     * Accessible by all authenticated users.
+     *
+     * @param request search request containing search text, occurrence count, and match mode
+     * @return search response with matched tech messages and recommended actions
+     */
+    @PostMapping("/search")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<TechMessageSearchResponse> searchTechMessages(@Valid @RequestBody TechMessageSearchRequest request) {
+        log.info("Tech message search request - text: '{}', mode: {}, occurrenceCount: {}",
+                request.getSearchText(), request.getMatchMode(), request.getOccurrenceCount());
+
+        TechMessageSearchResponse response = techMessageService.searchTechMessages(request);
+
+        log.info("Search completed - matches found: {}", response.getMatches().size());
+        return ResponseEntity.ok(response);
     }
 }

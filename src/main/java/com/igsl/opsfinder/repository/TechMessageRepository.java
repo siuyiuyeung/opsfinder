@@ -87,4 +87,38 @@ public interface TechMessageRepository extends JpaRepository<TechMessage, Long> 
      * @return number of tech messages with the specified severity
      */
     long countBySeverity(TechMessage.Severity severity);
+
+    /**
+     * Fuzzy search tech messages by keywords (category, description, or pattern).
+     * Searches across category (exact match), description (contains), and pattern (contains).
+     *
+     * @param keyword the search keyword
+     * @return list of tech messages matching the keyword
+     */
+    @EntityGraph(attributePaths = {"actionLevels"})
+    @Query("SELECT tm FROM TechMessage tm WHERE " +
+            "LOWER(tm.category) = LOWER(:keyword) OR " +
+            "LOWER(tm.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    List<TechMessage> fuzzySearchByKeyword(String keyword);
+
+    /**
+     * Multi-keyword fuzzy search with AND logic.
+     * All keywords must match (in category, description, or pattern).
+     *
+     * @param keywords list of keywords to search for
+     * @return list of tech messages matching all keywords
+     */
+    @EntityGraph(attributePaths = {"actionLevels"})
+    @Query("SELECT DISTINCT tm FROM TechMessage tm WHERE " +
+            "(:keyword1 IS NULL OR LOWER(tm.category) = LOWER(:keyword1) OR " +
+            "LOWER(tm.description) LIKE LOWER(CONCAT('%', :keyword1, '%')) OR " +
+            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', :keyword1, '%'))) AND " +
+            "(:keyword2 IS NULL OR LOWER(tm.category) = LOWER(:keyword2) OR " +
+            "LOWER(tm.description) LIKE LOWER(CONCAT('%', :keyword2, '%')) OR " +
+            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', :keyword2, '%'))) AND " +
+            "(:keyword3 IS NULL OR LOWER(tm.category) = LOWER(:keyword3) OR " +
+            "LOWER(tm.description) LIKE LOWER(CONCAT('%', :keyword3, '%')) OR " +
+            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', :keyword3, '%')))")
+    List<TechMessage> fuzzySearchByMultipleKeywords(String keyword1, String keyword2, String keyword3);
 }

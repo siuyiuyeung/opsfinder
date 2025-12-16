@@ -1,5 +1,7 @@
 package com.igsl.opsfinder.service;
 
+import com.igsl.opsfinder.dto.TechMessageSearchRequest;
+import com.igsl.opsfinder.dto.TechMessageSearchResponse;
 import com.igsl.opsfinder.dto.request.ActionLevelRequest;
 import com.igsl.opsfinder.dto.request.TechMessageRequest;
 import com.igsl.opsfinder.dto.response.ActionLevelResponse;
@@ -20,8 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Service layer for tech message management with pattern matching.
@@ -331,5 +333,191 @@ public class TechMessageService {
      */
     public long countMessagesBySeverity(TechMessage.Severity severity) {
         return techMessageRepository.countBySeverity(severity);
+    }
+
+    /**
+     * Search tech messages using fuzzy keyword matching and/or exact pattern matching.
+     * Supports hybrid search with ranking by relevance.
+     *
+     * @param request search request containing search text, occurrence count, and match mode
+     * @return search response with matched tech messages and recommended actions
+     */
+    public TechMessageSearchResponse searchTechMessages(TechMessageSearchRequest request) {
+        log.info("Searching tech messages with text: '{}', mode: {}, occurrenceCount: {}",
+                request.getSearchText(), request.getMatchMode(), request.getOccurrenceCount());
+
+        if (request.getSearchText() == null || request.getSearchText().trim().isEmpty()) {
+            return TechMessageSearchResponse.builder()
+                    .matches(Collections.emptyList())
+                    .noMatches(true)
+                    .build();
+        }
+
+        String searchText = request.getSearchText().trim();
+        List<TechMessageSearchResponse.SearchMatch> allMatches = new ArrayList<>();
+        Set<Long> matchedIds = new HashSet<>();  // For deduplication
+
+        // 1. Exact pattern matching (if mode is EXACT or BOTH)
+        if (request.getMatchMode() == TechMessageSearchRequest.MatchMode.EXACT ||
+                request.getMatchMode() == TechMessageSearchRequest.MatchMode.BOTH) {
+
+            List<TechMessage> allPatterns = techMessageRepository.findAllWithActionLevels();
+            Optional<PatternMatcher.MatchResult> exactMatch = patternMatcher.matchMessage(searchText, allPatterns);
+
+            if (exactMatch.isPresent()) {
+                PatternMatcher.MatchResult result = exactMatch.get();
+                TechMessage matched = result.getTechMessage();
+                matchedIds.add(matched.getId());
+
+                ActionLevel recommendedAction = determineRecommendedAction(
+                        matched, request.getOccurrenceCount());
+
+                allMatches.add(TechMessageSearchResponse.SearchMatch.builder()
+                        .techMessage(techMessageMapper.toResponse(matched))
+                        .matchType(TechMessageSearchResponse.MatchType.EXACT)
+                        .matchScore(1.0)  // Exact matches have highest score
+                        .matchedText(result.getMatchedText())
+                        .extractedVariables(result.getVariables())
+                        .recommendedAction(recommendedAction != null ? techMessageMapper.toActionLevelResponse(recommendedAction) : null)
+                        .allActionLevels(matched.getActionLevels().stream()
+                                .map(techMessageMapper::toActionLevelResponse)
+                                .collect(Collectors.toList()))
+                        .build());
+
+                log.debug("Exact pattern match found: {}", matched.getCategory());
+            }
+        }
+
+        // 2. Fuzzy keyword search (if mode is FUZZY or BOTH)
+        if (request.getMatchMode() == TechMessageSearchRequest.MatchMode.FUZZY ||
+                request.getMatchMode() == TechMessageSearchRequest.MatchMode.BOTH) {
+
+            List<TechMessage> fuzzyMatches = performFuzzySearch(searchText);
+
+            for (TechMessage techMessage : fuzzyMatches) {
+                // Skip if already matched by exact pattern
+                if (matchedIds.contains(techMessage.getId())) {
+                    continue;
+                }
+
+                double score = calculateFuzzyMatchScore(techMessage, searchText);
+                ActionLevel recommendedAction = determineRecommendedAction(
+                        techMessage, request.getOccurrenceCount());
+
+                allMatches.add(TechMessageSearchResponse.SearchMatch.builder()
+                        .techMessage(techMessageMapper.toResponse(techMessage))
+                        .matchType(TechMessageSearchResponse.MatchType.FUZZY)
+                        .matchScore(score)
+                        .matchedText(null)
+                        .extractedVariables(null)
+                        .recommendedAction(recommendedAction != null ? techMessageMapper.toActionLevelResponse(recommendedAction) : null)
+                        .allActionLevels(techMessage.getActionLevels().stream()
+                                .map(techMessageMapper::toActionLevelResponse)
+                                .collect(Collectors.toList()))
+                        .build());
+
+                log.debug("Fuzzy match found: {} (score: {})", techMessage.getCategory(), score);
+            }
+        }
+
+        // 3. Sort by match type (exact first) and score (highest first)
+        allMatches.sort((a, b) -> {
+            // Exact matches always come first
+            if (a.getMatchType() != b.getMatchType()) {
+                return a.getMatchType() == TechMessageSearchResponse.MatchType.EXACT ? -1 : 1;
+            }
+            // Then sort by score descending
+            return Double.compare(b.getMatchScore(), a.getMatchScore());
+        });
+
+        log.info("Search completed. Found {} matches", allMatches.size());
+
+        return TechMessageSearchResponse.builder()
+                .matches(allMatches)
+                .noMatches(allMatches.isEmpty())
+                .build();
+    }
+
+    /**
+     * Perform fuzzy keyword search across category, description, and pattern.
+     *
+     * @param searchText the search text (can be multiple keywords)
+     * @return list of matching tech messages
+     */
+    private List<TechMessage> performFuzzySearch(String searchText) {
+        // Split search text into keywords (max 3 keywords for performance)
+        String[] keywords = searchText.toLowerCase().split("\\s+");
+
+        if (keywords.length == 1) {
+            return techMessageRepository.fuzzySearchByKeyword(keywords[0]);
+        } else if (keywords.length == 2) {
+            return techMessageRepository.fuzzySearchByMultipleKeywords(keywords[0], keywords[1], null);
+        } else if (keywords.length >= 3) {
+            return techMessageRepository.fuzzySearchByMultipleKeywords(keywords[0], keywords[1], keywords[2]);
+        }
+
+        return Collections.emptyList();
+    }
+
+    /**
+     * Calculate fuzzy match score based on how well the tech message matches the search text.
+     * Score ranges from 0.0 to 0.9 (exact pattern matches get 1.0).
+     *
+     * @param techMessage the tech message
+     * @param searchText the search text
+     * @return match score (higher is better)
+     */
+    private double calculateFuzzyMatchScore(TechMessage techMessage, String searchText) {
+        String lowerSearchText = searchText.toLowerCase();
+        double score = 0.0;
+
+        // Category exact match: +0.5
+        if (techMessage.getCategory().toLowerCase().equals(lowerSearchText)) {
+            score += 0.5;
+        }
+        // Category contains: +0.3
+        else if (techMessage.getCategory().toLowerCase().contains(lowerSearchText)) {
+            score += 0.3;
+        }
+
+        // Description contains: +0.2
+        if (techMessage.getDescription() != null &&
+                techMessage.getDescription().toLowerCase().contains(lowerSearchText)) {
+            score += 0.2;
+        }
+
+        // Pattern contains: +0.2
+        if (techMessage.getPattern().toLowerCase().contains(lowerSearchText)) {
+            score += 0.2;
+        }
+
+        // Severity bonus: CRITICAL +0.1, HIGH +0.075, MEDIUM +0.05, LOW +0.025
+        switch (techMessage.getSeverity()) {
+            case CRITICAL -> score += 0.1;
+            case HIGH -> score += 0.075;
+            case MEDIUM -> score += 0.05;
+            case LOW -> score += 0.025;
+        }
+
+        return Math.min(score, 0.9);  // Cap at 0.9 to ensure exact matches are always higher
+    }
+
+    /**
+     * Determine recommended action based on occurrence count.
+     * If occurrence count is not provided, return null.
+     *
+     * @param techMessage the tech message
+     * @param occurrenceCount the occurrence count (can be null)
+     * @return recommended action level, or null if not applicable
+     */
+    private ActionLevel determineRecommendedAction(TechMessage techMessage, Integer occurrenceCount) {
+        if (occurrenceCount == null || occurrenceCount <= 0) {
+            return null;
+        }
+
+        List<ActionLevel> levels = actionLevelRepository
+                .findByTechMessageIdAndOccurrenceRange(techMessage.getId(), occurrenceCount);
+
+        return levels.isEmpty() ? null : levels.get(0);
     }
 }
