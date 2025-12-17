@@ -16,19 +16,19 @@
 
     <!-- Search Mode -->
     <v-card v-show="activeTab === 'search'">
-      <v-card-title class="text-h5">
+      <v-card-title class="text-h5 pa-3 text-left">
         <v-icon class="mr-2" size="large">mdi-alert-circle-check</v-icon>
         Find Action for Your Issue
       </v-card-title>
 
-      <v-card-text>
+      <v-card-text class="pa-3 text-left">
         <!-- Search Input -->
-        <v-row class="mb-4">
+        <v-row class="mb-3">
           <v-col cols="12">
             <v-textarea
               v-model="searchText"
               label="Paste error message or enter keywords..."
-              placeholder="e.g., database connection timeout&#10;e.g., null pointer exception&#10;e.g., memory"
+              placeholder=""
               variant="outlined"
               rows="4"
               clearable
@@ -76,9 +76,9 @@
         </v-row>
 
         <!-- Loading State -->
-        <div v-if="searching" class="text-center py-8">
+        <div v-if="searching" class="py-8 text-left">
           <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-          <p class="text-h6 mt-4">Searching for matches...</p>
+          <p class="text-h6 mt-4 text-left">Searching for matches...</p>
         </div>
 
         <!-- No Results -->
@@ -87,16 +87,16 @@
           type="warning"
           variant="tonal"
           prominent
-          class="my-4"
+          class="my-3 text-left"
         >
-          <v-alert-title class="text-h6">No Matching Tech Messages Found</v-alert-title>
-          <p class="mt-2">
+          <v-alert-title class="text-h6 text-left">No Matching Tech Messages Found</v-alert-title>
+          <p class="mt-2 text-left">
             We couldn't find any tech messages matching your search.
           </p>
-          <p class="mb-0">
+          <p class="mb-0 text-left">
             <strong>Suggestions:</strong>
           </p>
-          <ul>
+          <ul class="text-left">
             <li>Try using different keywords</li>
             <li>Use fewer keywords for broader results</li>
             <li>Contact your administrator to add a new pattern</li>
@@ -105,11 +105,11 @@
 
         <!-- Search Results -->
         <div v-else-if="searchResults.length > 0">
-          <v-alert type="success" variant="tonal" class="mb-4">
-            <v-alert-title class="text-h6">
+          <v-alert type="success" variant="tonal" class="mb-3 text-left">
+            <v-alert-title class="text-h6 text-left">
               Found {{ searchResults.length }} Match{{ searchResults.length > 1 ? 'es' : '' }}
             </v-alert-title>
-            <p class="mb-0">
+            <p class="mb-0 text-left">
               {{ occurrenceCount ? `Showing recommended actions for ${occurrenceCount} occurrence${occurrenceCount > 1 ? 's' : ''}` : 'Showing all action levels' }}
             </p>
           </v-alert>
@@ -118,12 +118,12 @@
           <v-card
             v-for="(match, index) in searchResults"
             :key="index"
-            class="mb-4"
+            class="mb-3"
             :color="getMatchCardColor(match)"
             variant="outlined"
             :border="getMatchBorderStyle(match)"
           >
-            <v-card-title class="d-flex align-center">
+            <v-card-title class="d-flex align-center pa-3 text-left">
               <v-chip :color="getSeverityColor(match.techMessage.severity)" class="mr-2">
                 {{ match.techMessage.severity }}
               </v-chip>
@@ -135,21 +135,21 @@
               </v-chip>
             </v-card-title>
 
-            <v-card-text>
+            <v-card-text class="pa-3 text-left">
               <!-- Description -->
-              <div v-if="match.techMessage.description" class="mb-3 text-body-1">
+              <div v-if="match.techMessage.description" class="mb-3 text-body-1 text-left">
                 <strong class="text-grey-darken-3">Description:</strong>
-                <span class="text-grey-darken-2">{{ match.techMessage.description }}</span>
+                <span class="text-grey-darken-2 ml-1">{{ match.techMessage.description }}</span>
               </div>
 
               <!-- Pattern (for exact matches) -->
-              <div v-if="match.matchType === 'EXACT'" class="mb-3 text-body-1">
+              <div v-if="match.matchType === 'EXACT'" class="mb-3 text-body-1 text-left">
                 <strong class="text-grey-darken-3">Matched Pattern:</strong>
-                <code class="ml-2 pa-2 bg-grey-lighten-4 text-grey-darken-4 d-inline-block">{{ match.techMessage.pattern }}</code>
+                <code class="ml-1 pa-2 bg-grey-lighten-4 text-grey-darken-4 d-inline-block">{{ match.techMessage.pattern }}</code>
               </div>
 
               <!-- Extracted Variables -->
-              <div v-if="match.extractedVariables && Object.keys(match.extractedVariables).length > 0" class="mb-3">
+              <div v-if="match.extractedVariables && Object.keys(match.extractedVariables).length > 0" class="mb-3 text-left">
                 <strong class="text-grey-darken-3">Extracted Information:</strong>
                 <v-chip
                   v-for="(value, key) in match.extractedVariables"
@@ -163,10 +163,10 @@
                 </v-chip>
               </div>
 
-              <v-divider class="my-4"></v-divider>
+              <v-divider class="my-3"></v-divider>
 
               <!-- Recommended Action -->
-              <div v-if="match.recommendedAction" class="mb-4">
+              <div v-if="match.recommendedAction" class="mb-3 text-left">
                 <div class="d-flex align-center mb-2">
                   <v-icon color="warning" size="large" class="mr-2">mdi-star</v-icon>
                   <strong class="text-h6 text-grey-darken-3">RECOMMENDED ACTION</strong>
@@ -175,13 +175,13 @@
                   </v-chip>
                 </div>
 
-                <v-card color="warning-lighten-5" variant="flat" class="pa-4">
-                  <div class="text-body-1 text-grey-darken-3" style="white-space: pre-line">{{ match.recommendedAction.actionText }}</div>
+                <v-card color="warning-lighten-5" variant="flat" class="pa-3">
+                  <div class="text-body-1 text-grey-darken-3 text-left" style="white-space: pre-line">{{ match.recommendedAction.actionText }}</div>
                   <v-btn
                     size="small"
                     variant="outlined"
                     color="warning-darken-2"
-                    class="mt-3"
+                    class="mt-2"
                     @click="copyToClipboard(match.recommendedAction.actionText)"
                   >
                     <v-icon start>mdi-content-copy</v-icon>
@@ -191,13 +191,14 @@
               </div>
 
               <!-- All Action Levels -->
-              <div>
+              <div class="text-left">
                 <strong class="text-subtitle-1 text-grey-darken-3">All Action Levels:</strong>
                 <v-list density="compact" class="mt-2" bg-color="transparent">
                   <v-list-item
                     v-for="action in match.allActionLevels"
                     :key="action.id"
                     :class="{'bg-warning-lighten-4': match.recommendedAction && action.id === match.recommendedAction.id}"
+                    class="text-left"
                   >
                     <template v-slot:prepend>
                       <v-chip size="x-small" class="mr-2" variant="flat" color="primary">
@@ -207,7 +208,7 @@
                         Priority: {{ action.priority }}
                       </v-chip>
                     </template>
-                    <v-list-item-title class="text-grey-darken-3">{{ action.actionText }}</v-list-item-title>
+                    <v-list-item-title class="text-grey-darken-3 text-left">{{ action.actionText }}</v-list-item-title>
                   </v-list-item>
                 </v-list>
               </div>
@@ -217,11 +218,11 @@
 
         <!-- Search History -->
         <v-card v-if="searchHistory.length > 0 && !searchPerformed" variant="outlined" class="mt-6">
-          <v-card-title class="text-subtitle-1">
+          <v-card-title class="text-subtitle-1 pa-3 text-left">
             <v-icon class="mr-2">mdi-history</v-icon>
             Recent Searches
           </v-card-title>
-          <v-card-text>
+          <v-card-text class="pa-3 text-left">
             <v-chip
               v-for="(term, index) in searchHistory"
               :key="index"
@@ -428,7 +429,7 @@ function getMatchCardColor(match: SearchMatch): string {
   if (match.matchType === 'EXACT') {
     return 'success-lighten-5'
   }
-  return 'white'
+  return 'grey-lighten-5'
 }
 
 // Get match border style
@@ -441,6 +442,15 @@ function getMatchBorderStyle(match: SearchMatch): string {
 </script>
 
 <style scoped>
+/* Ensure all text is left-aligned by default */
+.v-card,
+.v-card-title,
+.v-card-text,
+.v-list-item,
+.v-alert {
+  text-align: left !important;
+}
+
 code {
   font-family: 'Courier New', monospace;
   font-size: 0.9em;
