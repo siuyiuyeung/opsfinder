@@ -129,7 +129,7 @@
               </v-chip>
               <span class="text-h6">{{ match.techMessage.category }}</span>
               <v-spacer></v-spacer>
-              <v-chip size="small" :color="match.matchType === 'EXACT' ? 'success' : 'info'" variant="flat">
+              <v-chip size="small" :color="match.matchType === 'EXACT' ? 'success' : 'info'" variant="tonal">
                 {{ match.matchType === 'EXACT' ? '🎯 Exact Match' : '🔍 Fuzzy Match' }}
                 <span class="ml-1">({{ Math.round(match.matchScore * 100) }}%)</span>
               </v-chip>
@@ -170,7 +170,7 @@
                 <div class="d-flex align-center mb-2">
                   <v-icon color="warning" size="large" class="mr-2">mdi-star</v-icon>
                   <strong class="text-h6 text-grey-darken-3">RECOMMENDED ACTION</strong>
-                  <v-chip size="small" class="ml-2" color="warning" variant="flat">
+                  <v-chip size="small" class="ml-2" color="warning" variant="tonal">
                     {{ match.recommendedAction.occurrenceMin }}{{ match.recommendedAction.occurrenceMax ? `-${match.recommendedAction.occurrenceMax}` : '+' }} occurrences
                   </v-chip>
                 </div>
@@ -201,7 +201,7 @@
                     class="text-left"
                   >
                     <template v-slot:prepend>
-                      <v-chip size="x-small" class="mr-2" variant="flat" color="primary">
+                      <v-chip size="x-small" class="mr-2" variant="tonal" color="primary">
                         {{ action.occurrenceMin }}{{ action.occurrenceMax ? `-${action.occurrenceMax}` : '+' }} times
                       </v-chip>
                       <v-chip size="x-small" class="mr-2" variant="outlined" color="grey-darken-2">
