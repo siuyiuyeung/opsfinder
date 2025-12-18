@@ -256,6 +256,8 @@ OpsFinder/
   - Features: Search-as-you-type, occurrence-based actions, search history, copy-to-clipboard
   - Backend: Fuzzy multi-keyword search with relevance scoring
   - Frontend: Two-mode interface (Quick Search + Management)
+- ✅ **Search Input Single-Line Display** - Changed search textarea from 4 rows to 1 row for more compact UI (2025-12-18)
+  - See: `docs/task/search-input-single-line.md`
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)
