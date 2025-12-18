@@ -248,6 +248,10 @@ OpsFinder/
 - ✅ **Tech Message CRUD Forms** - Complete create/edit/delete UI for tech messages and action levels (2025-12-15)
   - See: `docs/task/implement-tech-message-forms.md`
 - ✅ **Quick Search Interface with Fuzzy Matching** - Optimized for daily incident lookup with hybrid fuzzy keyword + exact pattern search (2025-12-16)
+  - See: `docs/task/quick-search-implementation.md`
+
+- ✅ **Fixed PostgreSQL Type Inference Bug in Fuzzy Search** - Resolved "function lower(bytea) does not exist" error by converting JPQL to native SQL with explicit type casting (2025-12-18)
+  - See: `docs/task/fix-pattern-column-type.md`
   - See: `docs/task/enhance-ux-for-incident-search.md`
   - Features: Search-as-you-type, occurrence-based actions, search history, copy-to-clipboard
   - Backend: Fuzzy multi-keyword search with relevance scoring
