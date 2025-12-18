@@ -263,6 +263,10 @@ OpsFinder/
   - See: `docs/task/improve-action-level-display.md`
   - Features: Pattern visible for all matches, collapsible details, full-width action text, vertical chip layout
   - UX: Cleaner default view, better mobile experience, improved action text readability
+- ✅ **Tech Messages Grouped by Category and Severity** - Reorganized management view with hierarchical grouping (2025-12-18)
+  - See: `docs/task/group-tech-messages-by-category-severity.md`
+  - Features: 3-level nested structure (Category → Severity → Messages), alphabetically sorted categories, severity-prioritized display (CRITICAL → HIGH → MEDIUM → LOW)
+  - UX: Better organization, clear hierarchy, improved navigation with message counts at each level
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)

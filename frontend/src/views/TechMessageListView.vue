@@ -33,45 +33,71 @@
           </v-col>
         </v-row>
 
-        <!-- Tech Message List -->
+        <!-- Tech Message List - Grouped by Category then Severity -->
         <v-expansion-panels>
-          <v-expansion-panel v-for="techMessage in techMessages" :key="techMessage.id">
+          <v-expansion-panel v-for="category in sortedCategories" :key="category">
             <v-expansion-panel-title>
               <div class="d-flex align-center w-100">
-                <v-chip :color="getSeverityColor(techMessage.severity)" size="small" class="mr-2">
-                  {{ techMessage.severity }}
-                </v-chip>
-                <span class="font-weight-bold">{{ techMessage.category }}</span>
+                <v-icon class="mr-2">mdi-folder</v-icon>
+                <span class="font-weight-bold text-h6">{{ category }}</span>
                 <v-spacer></v-spacer>
-                <span class="text-caption text-grey">{{ techMessage.actionLevels.length }} action levels</span>
+                <v-chip size="small" variant="outlined">{{ getCategoryMessageCount(category) }} messages</v-chip>
               </div>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
-              <div class="mb-3">
-                <strong>Pattern:</strong>
-                <code class="ml-2">{{ techMessage.pattern }}</code>
-              </div>
-              <div v-if="techMessage.description" class="mb-3">
-                <strong>Description:</strong> {{ techMessage.description }}
-              </div>
-              <div v-if="techMessage.actionLevels.length > 0">
-                <strong>Action Levels:</strong>
-                <v-list dense>
-                  <v-list-item v-for="action in techMessage.actionLevels" :key="action.id">
-                    <v-list-item-title>
-                      <v-chip size="x-small" class="mr-2">
-                        {{ action.occurrenceMin }}{{ action.occurrenceMax ? `-${action.occurrenceMax}` : '+' }} occurrences
+              <v-expansion-panels class="mt-2">
+                <v-expansion-panel v-for="severity in getActiveSeverities(category)" :key="severity">
+                  <v-expansion-panel-title>
+                    <div class="d-flex align-center w-100">
+                      <v-chip :color="getSeverityColor(severity)" size="small" class="mr-2">
+                        {{ severity }}
                       </v-chip>
-                      <v-chip size="x-small" color="primary" class="mr-2">Priority: {{ action.priority }}</v-chip>
-                      {{ action.actionText }}
-                    </v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </div>
-              <div class="mt-3" v-if="authStore.isAdmin">
-                <v-btn size="small" @click="editTechMessage(techMessage)" class="mr-2">Edit</v-btn>
-                <v-btn size="small" color="error" @click="confirmDelete(techMessage)">Delete</v-btn>
-              </div>
+                      <v-spacer></v-spacer>
+                      <span class="text-caption text-grey">{{ groupedMessages[category][severity].length }} messages</span>
+                    </div>
+                  </v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <v-expansion-panels class="mt-2">
+                      <v-expansion-panel v-for="techMessage in groupedMessages[category][severity]" :key="techMessage.id">
+                        <v-expansion-panel-title>
+                          <div class="d-flex align-center w-100">
+                            <span class="font-weight-medium">Pattern: {{ truncatePattern(techMessage.pattern) }}</span>
+                            <v-spacer></v-spacer>
+                            <span class="text-caption text-grey">{{ techMessage.actionLevels.length }} action levels</span>
+                          </div>
+                        </v-expansion-panel-title>
+                        <v-expansion-panel-text>
+                          <div class="mb-3">
+                            <strong>Full Pattern:</strong>
+                            <code class="ml-2">{{ techMessage.pattern }}</code>
+                          </div>
+                          <div v-if="techMessage.description" class="mb-3">
+                            <strong>Description:</strong> {{ techMessage.description }}
+                          </div>
+                          <div v-if="techMessage.actionLevels.length > 0">
+                            <strong>Action Levels:</strong>
+                            <v-list dense>
+                              <v-list-item v-for="action in techMessage.actionLevels" :key="action.id">
+                                <v-list-item-title>
+                                  <v-chip size="x-small" class="mr-2">
+                                    {{ action.occurrenceMin }}{{ action.occurrenceMax ? `-${action.occurrenceMax}` : '+' }} occurrences
+                                  </v-chip>
+                                  <v-chip size="x-small" color="primary" class="mr-2">Priority: {{ action.priority }}</v-chip>
+                                  {{ action.actionText }}
+                                </v-list-item-title>
+                              </v-list-item>
+                            </v-list>
+                          </div>
+                          <div class="mt-3" v-if="authStore.isAdmin">
+                            <v-btn size="small" @click="editTechMessage(techMessage)" class="mr-2">Edit</v-btn>
+                            <v-btn size="small" color="error" @click="confirmDelete(techMessage)">Delete</v-btn>
+                          </div>
+                        </v-expansion-panel-text>
+                      </v-expansion-panel>
+                    </v-expansion-panels>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
             </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -292,7 +318,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import type { TechMessage, TechMessageRequest, ActionLevel, ActionLevelRequest } from '@/types/tech'
 import api from '@/services/api'
@@ -308,6 +334,52 @@ const totalPages = ref(0)
 const showCreateDialog = ref(false)
 const editMode = ref(false)
 const currentTechMessageId = ref<number | null>(null)
+
+// Severity order (highest to lowest priority)
+const severityOrder = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']
+
+// Group messages by category, then by severity
+const groupedMessages = computed(() => {
+  const grouped: Record<string, Record<string, TechMessage[]>> = {}
+
+  techMessages.value.forEach(msg => {
+    if (!grouped[msg.category]) {
+      grouped[msg.category] = {}
+    }
+    if (!grouped[msg.category][msg.severity]) {
+      grouped[msg.category][msg.severity] = []
+    }
+    grouped[msg.category][msg.severity].push(msg)
+  })
+
+  return grouped
+})
+
+// Get sorted categories (alphabetically)
+const sortedCategories = computed(() => {
+  return Object.keys(groupedMessages.value).sort()
+})
+
+// Get count of messages in a category
+function getCategoryMessageCount(category: string): number {
+  let count = 0
+  Object.values(groupedMessages.value[category] || {}).forEach(messages => {
+    count += messages.length
+  })
+  return count
+}
+
+// Get active severities for a category (sorted by severity order)
+function getActiveSeverities(category: string): string[] {
+  const severities = Object.keys(groupedMessages.value[category] || {})
+  return severityOrder.filter(sev => severities.includes(sev))
+}
+
+// Truncate pattern for display in title
+function truncatePattern(pattern: string, maxLength: number = 50): string {
+  if (pattern.length <= maxLength) return pattern
+  return pattern.substring(0, maxLength) + '...'
+}
 
 // Form state
 const formRef = ref()
