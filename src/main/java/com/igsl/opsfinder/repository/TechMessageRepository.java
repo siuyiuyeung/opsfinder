@@ -91,34 +91,43 @@ public interface TechMessageRepository extends JpaRepository<TechMessage, Long> 
     /**
      * Fuzzy search tech messages by keywords (category, description, or pattern).
      * Searches across category (exact match), description (contains), and pattern (contains).
+     * Uses native SQL with explicit type casting to avoid PostgreSQL type inference issues.
      *
      * @param keyword the search keyword
      * @return list of tech messages matching the keyword
      */
-    @EntityGraph(attributePaths = {"actionLevels"})
-    @Query("SELECT tm FROM TechMessage tm WHERE " +
-            "LOWER(tm.category) = LOWER(:keyword) OR " +
-            "LOWER(tm.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    @Query(value = "SELECT DISTINCT tm.* FROM tech_messages tm " +
+            "LEFT JOIN action_levels al ON tm.id = al.tech_message_id " +
+            "WHERE LOWER(tm.category) = LOWER(CAST(:keyword AS TEXT)) OR " +
+            "LOWER(tm.description) LIKE LOWER(CONCAT('%', CAST(:keyword AS TEXT), '%')) OR " +
+            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', CAST(:keyword AS TEXT), '%'))",
+            nativeQuery = true)
     List<TechMessage> fuzzySearchByKeyword(String keyword);
 
     /**
      * Multi-keyword fuzzy search with AND logic.
      * All keywords must match (in category, description, or pattern).
+     * Uses native SQL with explicit type casting to avoid PostgreSQL type inference issues.
      *
-     * @param keywords list of keywords to search for
+     * @param keyword1 first keyword (can be null)
+     * @param keyword2 second keyword (can be null)
+     * @param keyword3 third keyword (can be null)
      * @return list of tech messages matching all keywords
      */
-    @EntityGraph(attributePaths = {"actionLevels"})
-    @Query("SELECT DISTINCT tm FROM TechMessage tm WHERE " +
-            "(:keyword1 IS NULL OR LOWER(tm.category) = LOWER(:keyword1) OR " +
-            "LOWER(tm.description) LIKE LOWER(CONCAT('%', :keyword1, '%')) OR " +
-            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', :keyword1, '%'))) AND " +
-            "(:keyword2 IS NULL OR LOWER(tm.category) = LOWER(:keyword2) OR " +
-            "LOWER(tm.description) LIKE LOWER(CONCAT('%', :keyword2, '%')) OR " +
-            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', :keyword2, '%'))) AND " +
-            "(:keyword3 IS NULL OR LOWER(tm.category) = LOWER(:keyword3) OR " +
-            "LOWER(tm.description) LIKE LOWER(CONCAT('%', :keyword3, '%')) OR " +
-            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', :keyword3, '%')))")
+    @Query(value = "SELECT DISTINCT tm.* FROM tech_messages tm " +
+            "LEFT JOIN action_levels al ON tm.id = al.tech_message_id " +
+            "WHERE (:keyword1 IS NULL OR " +
+            "LOWER(tm.category) = LOWER(CAST(:keyword1 AS TEXT)) OR " +
+            "LOWER(tm.description) LIKE LOWER(CONCAT('%', CAST(:keyword1 AS TEXT), '%')) OR " +
+            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', CAST(:keyword1 AS TEXT), '%'))) AND " +
+            "(:keyword2 IS NULL OR " +
+            "LOWER(tm.category) = LOWER(CAST(:keyword2 AS TEXT)) OR " +
+            "LOWER(tm.description) LIKE LOWER(CONCAT('%', CAST(:keyword2 AS TEXT), '%')) OR " +
+            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', CAST(:keyword2 AS TEXT), '%'))) AND " +
+            "(:keyword3 IS NULL OR " +
+            "LOWER(tm.category) = LOWER(CAST(:keyword3 AS TEXT)) OR " +
+            "LOWER(tm.description) LIKE LOWER(CONCAT('%', CAST(:keyword3 AS TEXT), '%')) OR " +
+            "LOWER(tm.pattern) LIKE LOWER(CONCAT('%', CAST(:keyword3 AS TEXT), '%')))",
+            nativeQuery = true)
     List<TechMessage> fuzzySearchByMultipleKeywords(String keyword1, String keyword2, String keyword3);
 }

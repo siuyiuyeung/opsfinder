@@ -1,131 +1,70 @@
 databaseChangeLog:
   - changeSet:
-      id: 003-create-error-messages-table
+      id: 003-create-tech-messages-table
       author: claude
       changes:
-        - createTable:
-            tableName: error_messages
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: category
-                  type: VARCHAR(100)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: severity
-                  type: VARCHAR(20)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: pattern
-                  type: TEXT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: description
-                  type: TEXT
-              - column:
-                  name: created_at
-                  type: TIMESTAMP
-                  defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMP
-                  defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
-
         - sql:
-            sql: ALTER TABLE error_messages ADD CONSTRAINT chk_severity CHECK (severity IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL'));
-            rollback: ALTER TABLE error_messages DROP CONSTRAINT IF EXISTS chk_severity;
+            dbms: postgresql
+            sql: |
+              CREATE TABLE tech_messages (
+                id BIGSERIAL PRIMARY KEY,
+                category VARCHAR(100) NOT NULL,
+                severity VARCHAR(20) NOT NULL,
+                pattern TEXT NOT NULL,
+                description TEXT,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT chk_severity CHECK (severity IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL'))
+              );
+            rollback: DROP TABLE IF EXISTS tech_messages CASCADE;
 
         - createIndex:
-            indexName: idx_error_messages_category
-            tableName: error_messages
+            indexName: idx_tech_messages_category
+            tableName: tech_messages
             columns:
               - column:
                   name: category
 
         - createIndex:
-            indexName: idx_error_messages_severity
-            tableName: error_messages
+            indexName: idx_tech_messages_severity
+            tableName: tech_messages
             columns:
               - column:
                   name: severity
 
       rollback:
         - dropTable:
-            tableName: error_messages
+            tableName: tech_messages
 
   - changeSet:
       id: 003-create-action-levels-table
       author: claude
       changes:
-        - createTable:
-            tableName: action_levels
-            columns:
-              - column:
-                  name: id
-                  type: BIGINT
-                  autoIncrement: true
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: error_message_id
-                  type: BIGINT
-                  constraints:
-                    nullable: false
-                    foreignKeyName: fk_action_level_error_message
-                    references: error_messages(id)
-                    deleteCascade: true
-              - column:
-                  name: occurrence_min
-                  type: INT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: occurrence_max
-                  type: INT
-              - column:
-                  name: action_text
-                  type: TEXT
-                  constraints:
-                    nullable: false
-              - column:
-                  name: priority
-                  type: INT
-                  defaultValue: 1
-                  constraints:
-                    nullable: false
-              - column:
-                  name: created_at
-                  type: TIMESTAMP
-                  defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
-              - column:
-                  name: updated_at
-                  type: TIMESTAMP
-                  defaultValueComputed: CURRENT_TIMESTAMP
-                  constraints:
-                    nullable: false
+        - sql:
+            dbms: postgresql
+            sql: |
+              CREATE TABLE action_levels (
+                id BIGSERIAL PRIMARY KEY,
+                tech_message_id BIGINT NOT NULL,
+                occurrence_min INT NOT NULL,
+                occurrence_max INT,
+                action_text TEXT NOT NULL,
+                priority INT NOT NULL DEFAULT 1,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT fk_action_level_tech_message
+                  FOREIGN KEY (tech_message_id)
+                  REFERENCES tech_messages(id)
+                  ON DELETE CASCADE
+              );
+            rollback: DROP TABLE IF EXISTS action_levels CASCADE;
 
         - createIndex:
-            indexName: idx_action_levels_error_message
+            indexName: idx_action_levels_tech_message
             tableName: action_levels
             columns:
               - column:
-                  name: error_message_id
+                  name: tech_message_id
 
         - createIndex:
             indexName: idx_action_levels_priority
@@ -139,12 +78,12 @@ databaseChangeLog:
             tableName: action_levels
 
   - changeSet:
-      id: 003-insert-sample-error-messages
+      id: 003-insert-sample-tech-messages
       author: claude
       context: dev
       changes:
         - insert:
-            tableName: error_messages
+            tableName: tech_messages
             columns:
               - column:
                   name: category
@@ -160,7 +99,7 @@ databaseChangeLog:
                   value: "Network connection timeout - unable to reach remote host"
 
         - insert:
-            tableName: error_messages
+            tableName: tech_messages
             columns:
               - column:
                   name: category
@@ -176,7 +115,7 @@ databaseChangeLog:
                   value: "Database connection pool is exhausted - all connections in use"
 
         - insert:
-            tableName: error_messages
+            tableName: tech_messages
             columns:
               - column:
                   name: category
@@ -192,7 +131,7 @@ databaseChangeLog:
                   value: "Application ran out of memory - heap space exhausted"
 
         - insert:
-            tableName: error_messages
+            tableName: tech_messages
             columns:
               - column:
                   name: category
@@ -209,19 +148,19 @@ databaseChangeLog:
 
       rollback:
         - delete:
-            tableName: error_messages
+            tableName: tech_messages
 
   - changeSet:
       id: 003-insert-sample-action-levels
       author: claude
       context: dev
       changes:
-        # Action levels for Network timeout (error_message_id = 1)
+        # Action levels for Network timeout (tech_message_id = 1)
         - insert:
             tableName: action_levels
             columns:
               - column:
-                  name: error_message_id
+                  name: tech_message_id
                   value: 1
               - column:
                   name: occurrence_min
@@ -240,7 +179,7 @@ databaseChangeLog:
             tableName: action_levels
             columns:
               - column:
-                  name: error_message_id
+                  name: tech_message_id
                   value: 1
               - column:
                   name: occurrence_min
@@ -259,7 +198,7 @@ databaseChangeLog:
             tableName: action_levels
             columns:
               - column:
-                  name: error_message_id
+                  name: tech_message_id
                   value: 1
               - column:
                   name: occurrence_min
@@ -271,12 +210,12 @@ databaseChangeLog:
                   name: priority
                   value: 3
 
-        # Action levels for Database connection pool (error_message_id = 2)
+        # Action levels for Database connection pool (tech_message_id = 2)
         - insert:
             tableName: action_levels
             columns:
               - column:
-                  name: error_message_id
+                  name: tech_message_id
                   value: 2
               - column:
                   name: occurrence_min
@@ -295,7 +234,7 @@ databaseChangeLog:
             tableName: action_levels
             columns:
               - column:
-                  name: error_message_id
+                  name: tech_message_id
                   value: 2
               - column:
                   name: occurrence_min
@@ -307,12 +246,12 @@ databaseChangeLog:
                   name: priority
                   value: 2
 
-        # Action levels for OutOfMemoryError (error_message_id = 3)
+        # Action levels for OutOfMemoryError (tech_message_id = 3)
         - insert:
             tableName: action_levels
             columns:
               - column:
-                  name: error_message_id
+                  name: tech_message_id
                   value: 3
               - column:
                   name: occurrence_min
@@ -331,7 +270,7 @@ databaseChangeLog:
             tableName: action_levels
             columns:
               - column:
-                  name: error_message_id
+                  name: tech_message_id
                   value: 3
               - column:
                   name: occurrence_min
@@ -343,12 +282,12 @@ databaseChangeLog:
                   name: priority
                   value: 2
 
-        # Action levels for Disk space (error_message_id = 4)
+        # Action levels for Disk space (tech_message_id = 4)
         - insert:
             tableName: action_levels
             columns:
               - column:
-                  name: error_message_id
+                  name: tech_message_id
                   value: 4
               - column:
                   name: occurrence_min

@@ -4,9 +4,7 @@ databaseChangeLog:
   - include:
       file: db/changelog/changelog-002-devices.yaml
   - include:
-      file: db/changelog/changelog-003-error-messages.yaml
-  - include:
-      file: db/changelog/changelog-003b-rename-error-to-tech-messages.yaml
+      file: db/changelog/changelog-003-tech-messages.yaml
   # Future changesets will be added here
   # - include:
   #     file: db/changelog/changelog-004-incidents.yaml
