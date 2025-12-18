@@ -6,7 +6,7 @@
         <span>Tech Message Knowledge Base</span>
         <v-spacer></v-spacer>
         <v-btn v-if="authStore.isAdmin" color="primary" prepend-icon="mdi-plus" @click="showCreateDialog = true">
-          Add Tech Message Pattern
+          Add Pattern
         </v-btn>
       </v-card-title>
 
@@ -17,7 +17,7 @@
             <v-select
               v-model="selectedCategory"
               :items="categories"
-              label="Filter by Category"
+              label="Category"
               clearable
               @update:model-value="loadTechMessages"
             ></v-select>
@@ -26,7 +26,7 @@
             <v-select
               v-model="selectedSeverity"
               :items="severityOptions"
-              label="Filter by Severity"
+              label="Severity"
               clearable
               @update:model-value="loadTechMessages"
             ></v-select>

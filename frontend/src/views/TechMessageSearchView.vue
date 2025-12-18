@@ -27,7 +27,7 @@
           <v-col cols="12">
             <v-textarea
               v-model="searchText"
-              label="Paste error message or enter keywords..."
+              label="Error message or keywords"
               placeholder=""
               variant="outlined"
               rows="4"
@@ -45,7 +45,7 @@
             <div class="d-flex align-center">
               <v-text-field
                 v-model.number="occurrenceCount"
-                label="How many times has this occurred? (optional)"
+                label="Occurrence count (optional)"
                 type="number"
                 min="1"
                 variant="outlined"
