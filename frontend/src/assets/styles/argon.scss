@@ -1,0 +1,415 @@
+/*!
+ * Argon Design System Theme for OpsFinder
+ * Adapted from Creative Tim's Argon Design System
+ * https://www.creative-tim.com/product/argon-design-system
+ */
+
+// Import Argon variables and utilities
+@import './variables';
+@import './gradients';
+@import './shadows';
+@import './utilities';
+
+// Global Styles
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-base;
+  line-height: $line-height-base;
+  color: $gray-700;
+  background-color: $gray-100;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Typography
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-weight: $headings-font-weight;
+  color: $headings-color;
+  line-height: 1.2;
+}
+
+h1, .h1 { font-size: 2.5rem; }
+h2, .h2 { font-size: 2rem; }
+h3, .h3 { font-size: 1.75rem; }
+h4, .h4 { font-size: 1.5rem; }
+h5, .h5 { font-size: 1.25rem; }
+h6, .h6 { font-size: 1rem; }
+
+p {
+  line-height: 1.7;
+  margin-bottom: 1rem;
+}
+
+a {
+  color: $primary;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: darken($primary, 10%);
+  }
+}
+
+// Code
+code {
+  padding: 0.125rem 0.25rem;
+  background-color: $gray-100;
+  border-radius: $border-radius-sm;
+  color: $pink;
+  font-size: 0.875em;
+}
+
+pre {
+  background-color: $gray-100;
+  border-radius: $border-radius;
+  padding: 1rem;
+  overflow-x: auto;
+
+  code {
+    background: none;
+    padding: 0;
+    color: $gray-800;
+  }
+}
+
+// Vuetify Component Enhancements
+
+// App Bar
+.v-app-bar {
+  box-shadow: $box-shadow !important;
+
+  &.v-toolbar {
+    border-bottom: none !important;
+  }
+}
+
+// Cards
+.v-card {
+  border-radius: $border-radius !important;
+  box-shadow: $box-shadow !important;
+  transition: $transition-base !important;
+  border: 0 !important;
+
+  &.argon-card {
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: $box-shadow-lg !important;
+    }
+  }
+
+  .v-card-title {
+    color: $gray-800;
+    font-weight: 600;
+  }
+
+  .v-card-subtitle {
+    color: $gray-600;
+  }
+
+  .v-card-text {
+    color: $gray-700;
+  }
+}
+
+// Buttons
+.v-btn {
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-weight: 600 !important;
+  border-radius: $border-radius !important;
+  box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.15s ease !important;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  // Remove default Vuetify button shadows for our custom ones
+  &.v-btn--elevated {
+    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  }
+}
+
+// Text Fields & Inputs
+.v-text-field,
+.v-select,
+.v-textarea {
+  .v-field {
+    border-radius: $border-radius !important;
+    box-shadow: none !important;
+  }
+
+  .v-field--focused {
+    box-shadow: 0 0 0 3px rgba($primary, 0.15) !important;
+  }
+
+  input,
+  textarea {
+    color: $gray-700 !important;
+  }
+
+  .v-label {
+    color: $gray-600 !important;
+  }
+}
+
+// Chips
+.v-chip {
+  border-radius: $border-radius-sm !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+}
+
+// Lists
+.v-list {
+  .v-list-item {
+    border-radius: $border-radius-sm !important;
+
+    &:hover {
+      background-color: rgba($primary, 0.05) !important;
+    }
+
+    &--active {
+      color: $primary !important;
+      background-color: rgba($primary, 0.1) !important;
+    }
+  }
+
+  .v-list-item-title {
+    color: $gray-700;
+    font-weight: 500;
+  }
+}
+
+// Navigation Drawer
+.v-navigation-drawer {
+  box-shadow: $box-shadow-lg !important;
+}
+
+// Tables
+.v-table {
+  border-radius: $border-radius !important;
+  box-shadow: $box-shadow !important;
+
+  thead tr th {
+    color: $gray-800 !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    font-size: 0.875rem !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  tbody tr td {
+    color: $gray-700 !important;
+  }
+
+  tbody tr:hover {
+    background-color: rgba($primary, 0.02) !important;
+  }
+}
+
+// Expansion Panels
+.v-expansion-panel {
+  border-radius: $border-radius !important;
+  box-shadow: $box-shadow-sm !important;
+  margin-bottom: 0.5rem !important;
+
+  &::before {
+    box-shadow: none !important;
+  }
+
+  .v-expansion-panel-title {
+    font-weight: 600 !important;
+    color: $gray-800 !important;
+    padding: 1rem !important;
+
+    &:hover {
+      background-color: rgba($primary, 0.02) !important;
+    }
+  }
+
+  .v-expansion-panel-text {
+    color: $gray-700 !important;
+  }
+
+  &--active {
+    box-shadow: $box-shadow !important;
+  }
+}
+
+// Pagination
+.v-pagination {
+  .v-btn {
+    border-radius: $border-radius !important;
+    font-weight: 600 !important;
+  }
+
+  .v-btn--active {
+    background-color: $primary !important;
+    color: white !important;
+  }
+}
+
+// Alerts/Snackbars
+.v-snackbar {
+  .v-snackbar__wrapper {
+    border-radius: $border-radius !important;
+    box-shadow: $box-shadow-lg !important;
+  }
+}
+
+// Dialogs/Modals
+.v-dialog {
+  .v-card {
+    box-shadow: 0 15px 35px rgba(50, 50, 93, 0.2), 0 5px 15px rgba(0, 0, 0, 0.17) !important;
+  }
+}
+
+// Tabs
+.v-tabs {
+  .v-tab {
+    text-transform: none !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+    color: $gray-600 !important;
+
+    &--selected {
+      color: $primary !important;
+    }
+  }
+
+  .v-tab-item--selected {
+    color: $primary !important;
+  }
+}
+
+// Progress
+.v-progress-linear {
+  border-radius: $border-radius !important;
+}
+
+.v-progress-circular {
+  color: $primary !important;
+}
+
+// Badges (if used)
+.v-badge {
+  .v-badge__badge {
+    border-radius: $border-radius-sm !important;
+    font-weight: 600 !important;
+  }
+}
+
+// Custom Argon Components
+
+// Stat Card
+.stat-card {
+  background: white;
+  border-radius: $border-radius;
+  padding: 1.5rem;
+  box-shadow: $box-shadow;
+  transition: $transition-base;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $box-shadow-lg;
+  }
+
+  .stat-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: $border-radius;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .stat-title {
+    color: $gray-600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-value {
+    color: $gray-800;
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1;
+  }
+}
+
+// Info Card (for displaying grouped information)
+.info-card {
+  background: white;
+  border-radius: $border-radius;
+  padding: 1.5rem;
+  box-shadow: $box-shadow-sm;
+  border-left: 3px solid $primary;
+
+  &.info-card-success {
+    border-left-color: $success;
+  }
+
+  &.info-card-warning {
+    border-left-color: $warning;
+  }
+
+  &.info-card-danger {
+    border-left-color: $danger;
+  }
+
+  &.info-card-info {
+    border-left-color: $info;
+  }
+}
+
+// Section Separator
+.section-separator {
+  margin: 2rem 0;
+  text-align: center;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: $gray-300;
+  }
+
+  span {
+    background-color: white;
+    padding: 0 1rem;
+    position: relative;
+    color: $gray-600;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  h1, .h1 { font-size: 2rem; }
+  h2, .h2 { font-size: 1.75rem; }
+  h3, .h3 { font-size: 1.5rem; }
+  h4, .h4 { font-size: 1.25rem; }
+}

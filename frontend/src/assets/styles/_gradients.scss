@@ -1,0 +1,56 @@
+// Argon Design System Gradient Utilities
+
+@import './variables';
+
+// Gradient Backgrounds
+.bg-gradient-default {
+  background: linear-gradient(87deg, #172b4d 0, #1a174d 100%);
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
+}
+
+.bg-gradient-secondary {
+  background: linear-gradient(87deg, #f4f5f7 0, #dee2e6 100%);
+}
+
+.bg-gradient-success {
+  background: linear-gradient(87deg, #2dce89 0, #2dcecc 100%);
+}
+
+.bg-gradient-info {
+  background: linear-gradient(87deg, #11cdef 0, #1171ef 100%);
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(87deg, #fb6340 0, #fbb140 100%);
+}
+
+.bg-gradient-danger {
+  background: linear-gradient(87deg, #f5365c 0, #f56036 100%);
+}
+
+.bg-gradient-light {
+  background: linear-gradient(87deg, #adb5bd 0, #ced4da 100%);
+}
+
+.bg-gradient-dark {
+  background: linear-gradient(87deg, #212529 0, #32325d 100%);
+}
+
+// Gradient overlays for cards/sections
+.bg-gradient-overlay {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 100%);
+    pointer-events: none;
+  }
+}

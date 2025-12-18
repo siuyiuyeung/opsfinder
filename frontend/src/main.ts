@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import './style.css'
+import './assets/styles/argon.scss'
 import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import pinia from './plugins/pinia'

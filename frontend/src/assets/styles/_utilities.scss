@@ -1,0 +1,155 @@
+// Argon Design System Utility Classes
+
+@import './variables';
+
+// Border Radius
+.rounded {
+  border-radius: $border-radius !important;
+}
+
+.rounded-sm {
+  border-radius: $border-radius-sm !important;
+}
+
+.rounded-lg {
+  border-radius: $border-radius-lg !important;
+}
+
+.rounded-circle {
+  border-radius: 50% !important;
+}
+
+.rounded-pill {
+  border-radius: 50rem !important;
+}
+
+// Background Colors
+.bg-white {
+  background-color: $white !important;
+}
+
+.bg-gray-100 {
+  background-color: $gray-100 !important;
+}
+
+.bg-gray-200 {
+  background-color: $gray-200 !important;
+}
+
+.bg-primary {
+  background-color: $primary !important;
+}
+
+.bg-secondary {
+  background-color: $secondary !important;
+}
+
+.bg-success {
+  background-color: $success !important;
+}
+
+.bg-info {
+  background-color: $info !important;
+}
+
+.bg-warning {
+  background-color: $warning !important;
+}
+
+.bg-danger {
+  background-color: $danger !important;
+}
+
+// Text Colors
+.text-primary {
+  color: $primary !important;
+}
+
+.text-secondary {
+  color: $gray-600 !important;
+}
+
+.text-success {
+  color: $success !important;
+}
+
+.text-info {
+  color: $info !important;
+}
+
+.text-warning {
+  color: $warning !important;
+}
+
+.text-danger {
+  color: $danger !important;
+}
+
+.text-muted {
+  color: $gray-600 !important;
+}
+
+.text-dark {
+  color: $gray-800 !important;
+}
+
+.text-white {
+  color: $white !important;
+}
+
+// Spacing utilities (complement Vuetify)
+.mt-auto {
+  margin-top: auto !important;
+}
+
+.mb-auto {
+  margin-bottom: auto !important;
+}
+
+// Icon Shape (decorative circles with gradients)
+.icon-shape {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  vertical-align: middle;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+
+  i, svg {
+    font-size: 1.25rem;
+  }
+
+  &.icon-sm {
+    width: 2rem;
+    height: 2rem;
+
+    i, svg {
+      font-size: 0.875rem;
+    }
+  }
+
+  &.icon-lg {
+    width: 4rem;
+    height: 4rem;
+
+    i, svg {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// Separator line
+.separator {
+  height: 1px;
+  background-color: $gray-300;
+  margin: $spacer 0;
+
+  &.separator-dashed {
+    background-image: linear-gradient(to right, $gray-300 50%, transparent 50%);
+    background-size: 8px 1px;
+    background-repeat: repeat-x;
+    background-color: transparent;
+  }
+}
