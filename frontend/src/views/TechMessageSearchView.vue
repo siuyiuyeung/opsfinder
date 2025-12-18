@@ -208,7 +208,7 @@
                         Priority: {{ action.priority }}
                       </v-chip>
                     </template>
-                    <v-list-item-title class="text-grey-darken-3 text-left">{{ action.actionText }}</v-list-item-title>
+                    <v-list-item-title class="text-grey-darken-3 text-left" style="white-space: pre-line; height: auto; -webkit-line-clamp: unset;">{{ action.actionText }}</v-list-item-title>
                   </v-list-item>
                 </v-list>
               </div>
