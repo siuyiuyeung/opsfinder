@@ -15,13 +15,13 @@
     </v-card>
 
     <!-- Search Mode -->
-    <v-card v-show="activeTab === 'search'">
-      <v-card-title class="text-h5 pa-3 text-left">
-        <v-icon class="mr-2" size="large">mdi-alert-circle-check</v-icon>
-        Find Action for Your Issue
+    <v-card v-show="activeTab === 'search'" class="argon-card">
+      <v-card-title class="text-h5 pa-4 text-left d-flex align-center">
+        <v-icon class="mr-2" size="large" color="primary">mdi-alert-circle-check</v-icon>
+        <span style="word-break: break-word;">Find Action for Your Issue</span>
       </v-card-title>
 
-      <v-card-text class="pa-3 text-left">
+      <v-card-text class="pa-4 text-left">
         <!-- Search Input -->
         <v-row class="mb-3">
           <v-col cols="12">
@@ -118,18 +118,17 @@
           <v-card
             v-for="(match, index) in searchResults"
             :key="index"
-            class="mb-3"
+            class="mb-4 shadow"
             :color="getMatchCardColor(match)"
             variant="outlined"
             :border="getMatchBorderStyle(match)"
           >
-            <v-card-title class="d-flex align-center pa-3 text-left">
-              <v-chip :color="getSeverityColor(match.techMessage.severity)" class="mr-2" variant="tonal">
+            <v-card-title class="d-flex align-center flex-wrap pa-4 text-left">
+              <v-chip :color="getSeverityColor(match.techMessage.severity)" class="mr-2 mb-2" variant="tonal">
                 {{ match.techMessage.severity }}
               </v-chip>
-              <span class="text-h6 text-grey-darken-4">{{ match.techMessage.category }}</span>
-              <v-spacer></v-spacer>
-              <v-chip size="small" :color="match.matchType === 'EXACT' ? 'success' : 'info'" variant="tonal">
+              <span class="text-h6 text-grey-darken-4 mr-2 mb-2" style="word-break: break-word; flex: 1 1 auto; min-width: 0;">{{ match.techMessage.category }}</span>
+              <v-chip size="small" :color="match.matchType === 'EXACT' ? 'success' : 'info'" variant="tonal" class="mr-2 mb-2">
                 {{ match.matchType === 'EXACT' ? '🎯 Exact Match' : '🔍 Fuzzy Match' }}
                 <span class="ml-1">({{ Math.round(match.matchScore * 100) }}%)</span>
               </v-chip>
@@ -138,15 +137,15 @@
                 :icon="isMatchExpanded(index) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
                 size="small"
                 variant="text"
-                class="ml-2"
+                class="mb-2"
               ></v-btn>
             </v-card-title>
 
-            <v-card-text class="pa-3 text-left">
+            <v-card-text class="pa-4 text-left">
               <!-- Pattern (always visible) -->
               <div class="mb-3 text-body-1 text-left">
                 <strong class="text-grey-darken-3">Pattern:</strong>
-                <code class="ml-1 pa-2 bg-grey-lighten-4 text-grey-darken-4 d-inline-block">{{ match.techMessage.pattern }}</code>
+                <pre class="mt-2 pa-3 bg-grey-lighten-4 rounded" style="overflow-x: auto; word-wrap: break-word; white-space: pre-wrap; max-width: 100%;"><code class="text-grey-darken-4">{{ match.techMessage.pattern }}</code></pre>
               </div>
 
               <!-- Collapsible Details -->
@@ -154,43 +153,46 @@
                 <!-- Description -->
                 <div v-if="match.techMessage.description" class="mb-3 text-body-1 text-left">
                   <strong class="text-grey-darken-3">Description:</strong>
-                  <span class="text-grey-darken-2 ml-1">{{ match.techMessage.description }}</span>
+                  <p class="text-grey-darken-2 mt-1 mb-0" style="word-wrap: break-word; overflow-wrap: break-word;">{{ match.techMessage.description }}</p>
                 </div>
 
                 <!-- Extracted Variables -->
                 <div v-if="match.extractedVariables && Object.keys(match.extractedVariables).length > 0" class="mb-3 text-left">
-                  <strong class="text-grey-darken-3">Extracted Information:</strong>
-                  <v-chip
-                    v-for="(value, key) in match.extractedVariables"
-                    :key="key"
-                    size="small"
-                    class="mr-2 mt-1"
-                    variant="outlined"
-                    color="primary"
-                  >
-                    {{ key }}: {{ value }}
-                  </v-chip>
+                  <strong class="text-grey-darken-3 d-block mb-2">Extracted Information:</strong>
+                  <div class="d-flex flex-wrap">
+                    <v-chip
+                      v-for="(value, key) in match.extractedVariables"
+                      :key="key"
+                      size="small"
+                      class="mr-2 mb-2"
+                      variant="outlined"
+                      color="primary"
+                      style="max-width: 100%; word-break: break-word;"
+                    >
+                      {{ key }}: {{ value }}
+                    </v-chip>
+                  </div>
                 </div>
 
-                <v-divider class="my-3"></v-divider>
+                <v-divider class="my-4"></v-divider>
 
                 <!-- Recommended Action -->
-                <div v-if="match.recommendedAction" class="mb-3 text-left">
-                  <div class="d-flex align-center mb-2">
+                <div v-if="match.recommendedAction" class="mb-4 text-left">
+                  <div class="d-flex align-center flex-wrap mb-2">
                     <v-icon color="warning" size="large" class="mr-2">mdi-star</v-icon>
-                    <strong class="text-h6 text-grey-darken-3">RECOMMENDED ACTION</strong>
-                    <v-chip size="small" class="ml-2" color="warning" variant="tonal">
+                    <strong class="text-h6 text-grey-darken-3 mr-2">RECOMMENDED ACTION</strong>
+                    <v-chip size="small" class="mt-1" color="warning" variant="tonal">
                       {{ match.recommendedAction.occurrenceMin }}{{ match.recommendedAction.occurrenceMax ? `-${match.recommendedAction.occurrenceMax}` : '+' }} occurrences
                     </v-chip>
                   </div>
 
-                  <v-card color="warning-lighten-5" variant="flat" class="pa-3">
-                    <div class="text-body-1 text-grey-darken-3 text-left" style="white-space: pre-line">{{ match.recommendedAction.actionText }}</div>
+                  <v-card color="warning-lighten-5" variant="flat" class="pa-4 rounded">
+                    <div class="text-body-1 text-grey-darken-3 text-left" style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">{{ match.recommendedAction.actionText }}</div>
                     <v-btn
                       size="small"
                       variant="outlined"
                       color="warning-darken-2"
-                      class="mt-2"
+                      class="mt-3"
                       @click="copyToClipboard(match.recommendedAction.actionText)"
                     >
                       <v-icon start>mdi-content-copy</v-icon>
@@ -201,24 +203,24 @@
 
                 <!-- All Action Levels -->
                 <div class="text-left">
-                  <strong class="text-subtitle-1 text-grey-darken-3">All Action Levels:</strong>
-                  <v-list density="compact" class="mt-2" bg-color="transparent">
+                  <strong class="text-subtitle-1 text-grey-darken-3 d-block mb-2">All Action Levels:</strong>
+                  <v-list density="compact" class="mt-2 rounded" bg-color="transparent">
                     <v-list-item
                       v-for="action in match.allActionLevels"
                       :key="action.id"
                       :class="{'bg-warning-lighten-4': match.recommendedAction && action.id === match.recommendedAction.id}"
-                      class="text-left"
+                      class="text-left mb-2 rounded"
                     >
                       <v-list-item-title class="text-grey-darken-3 text-left">
-                        <div class="mb-1">
-                          <v-chip size="x-small" class="mr-2" variant="tonal" color="primary">
+                        <div class="mb-2 d-flex flex-wrap">
+                          <v-chip size="x-small" class="mr-2 mb-1" variant="tonal" color="primary">
                             {{ action.occurrenceMin }}{{ action.occurrenceMax ? `-${action.occurrenceMax}` : '+' }} times
                           </v-chip>
-                          <v-chip size="x-small" variant="outlined" color="grey-darken-2">
+                          <v-chip size="x-small" class="mb-1" variant="outlined" color="grey-darken-2">
                             Priority: {{ action.priority }}
                           </v-chip>
                         </div>
-                        <div style="white-space: pre-line;">{{ action.actionText }}</div>
+                        <div style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;">{{ action.actionText }}</div>
                       </v-list-item-title>
                     </v-list-item>
                   </v-list>

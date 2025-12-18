@@ -1,13 +1,13 @@
 <template>
   <v-app>
-    <v-main>
+    <v-main class="bg-gradient-primary">
       <v-container fluid class="fill-height pa-0">
         <v-row no-gutters class="fill-height" align="center" justify="center">
           <v-col cols="12" sm="8" md="6" lg="4" xl="3">
-            <v-card elevation="8" class="mx-4">
-              <v-card-title class="text-h4 text-center py-6 bg-primary">
-                <v-icon size="large" class="mr-2">mdi-shield-lock</v-icon>
-                OpsFinder
+            <v-card class="mx-4 shadow-lg">
+              <v-card-title class="text-h4 text-center py-6 text-primary d-flex align-center justify-center flex-wrap">
+                <v-icon size="large" class="mr-2" color="primary">mdi-shield-lock</v-icon>
+                <span style="word-break: break-word;">OpsFinder</span>
               </v-card-title>
 
               <v-card-text class="pa-6">
@@ -60,7 +60,7 @@
                 </v-form>
               </v-card-text>
 
-              <v-card-text class="text-center text-caption text-medium-emphasis pb-6">
+              <v-card-text class="text-center text-caption text-medium-emphasis pb-6" style="word-wrap: break-word;">
                 OpsFinder - Production Operations Tracker
               </v-card-text>
             </v-card>

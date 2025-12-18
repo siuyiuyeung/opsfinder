@@ -2,22 +2,22 @@
   <v-container fluid>
     <v-row>
       <v-col cols="12">
-        <v-card>
-          <v-card-title class="d-flex align-center">
-            <v-icon class="mr-2">mdi-server</v-icon>
-            <span>Devices</span>
-            <v-spacer></v-spacer>
+        <v-card class="argon-card">
+          <v-card-title class="d-flex align-center flex-wrap pa-4">
+            <v-icon class="mr-2" color="primary">mdi-server</v-icon>
+            <span style="word-break: break-word; flex: 1 1 auto; min-width: 0;">Devices</span>
             <v-btn
               v-if="authStore.isAdmin || authStore.isOperator"
               color="primary"
               prepend-icon="mdi-plus"
               @click="showCreateDialog = true"
+              class="mt-2"
             >
               Add Device
             </v-btn>
           </v-card-title>
 
-          <v-card-text>
+          <v-card-text class="pa-4">
             <!-- Search and Filters -->
             <v-row>
               <v-col cols="12" md="4">
@@ -62,16 +62,16 @@
               :items-per-page="deviceStore.pageSize"
               :page="deviceStore.currentPage + 1"
               hide-default-footer
-              class="elevation-1"
+              class="shadow rounded"
             >
               <template v-slot:item="{ item }">
                 <tr>
-                  <td>{{ item.zone }}</td>
-                  <td>{{ item.type }}</td>
-                  <td>{{ item.hostname || '-' }}</td>
-                  <td>{{ item.ip || '-' }}</td>
-                  <td>{{ item.location || '-' }}</td>
-                  <td>
+                  <td style="word-wrap: break-word; overflow-wrap: break-word; max-width: 200px;">{{ item.zone }}</td>
+                  <td style="word-wrap: break-word; overflow-wrap: break-word; max-width: 150px;">{{ item.type }}</td>
+                  <td style="word-wrap: break-word; overflow-wrap: break-word; max-width: 200px;">{{ item.hostname || '-' }}</td>
+                  <td style="word-wrap: break-word; overflow-wrap: break-word; max-width: 150px;">{{ item.ip || '-' }}</td>
+                  <td style="word-wrap: break-word; overflow-wrap: break-word; max-width: 200px;">{{ item.location || '-' }}</td>
+                  <td style="white-space: nowrap;">
                     <v-btn
                       icon="mdi-eye"
                       size="small"
