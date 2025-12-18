@@ -30,7 +30,7 @@
               label="Error message or keywords"
               placeholder=""
               variant="outlined"
-              rows="4"
+              rows="1"
               clearable
               autofocus
               :loading="searching"
