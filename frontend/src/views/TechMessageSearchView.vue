@@ -124,10 +124,10 @@
             :border="getMatchBorderStyle(match)"
           >
             <v-card-title class="d-flex align-center pa-3 text-left">
-              <v-chip :color="getSeverityColor(match.techMessage.severity)" class="mr-2">
+              <v-chip :color="getSeverityColor(match.techMessage.severity)" class="mr-2" variant="tonal">
                 {{ match.techMessage.severity }}
               </v-chip>
-              <span class="text-h6">{{ match.techMessage.category }}</span>
+              <span class="text-h6 text-grey-darken-4">{{ match.techMessage.category }}</span>
               <v-spacer></v-spacer>
               <v-chip size="small" :color="match.matchType === 'EXACT' ? 'success' : 'info'" variant="tonal">
                 {{ match.matchType === 'EXACT' ? '🎯 Exact Match' : '🔍 Fuzzy Match' }}
