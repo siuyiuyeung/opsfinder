@@ -258,6 +258,11 @@ OpsFinder/
   - Frontend: Two-mode interface (Quick Search + Management)
 - ✅ **Search Input Single-Line Display** - Changed search textarea from 4 rows to 1 row for more compact UI (2025-12-18)
   - See: `docs/task/search-input-single-line.md`
+- ✅ **Improved Search Results Display** - Enhanced readability with collapsible sections and vertical chip layout (2025-12-18)
+  - See: `docs/task/show-pattern-in-search-results.md`
+  - See: `docs/task/improve-action-level-display.md`
+  - Features: Pattern visible for all matches, collapsible details, full-width action text, vertical chip layout
+  - UX: Cleaner default view, better mobile experience, improved action text readability
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)
