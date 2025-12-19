@@ -1,5 +1,8 @@
-# Production Profile Configuration
 spring:
+  application:
+    name: OpsFinder
+
+# Production Profile Configuration
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://database:5432/opsfinder}
     username: ${SPRING_DATASOURCE_USERNAME:opsuser}
@@ -20,6 +23,10 @@ spring:
   liquibase:
     contexts: prod
     enabled: true
+  web:
+    error:
+      include-message: never
+      include-stacktrace: never
 
 # JWT - Must use secure secret in production
 jwt:
@@ -52,9 +59,6 @@ server:
   compression:
     enabled: true
     mime-types: application/json,application/xml,text/html,text/xml,text/plain
-  error:
-    include-message: never
-    include-stacktrace: never
 
 # CORS - Restricted in production
 cors:
