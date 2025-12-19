@@ -3,11 +3,11 @@
     <!-- Mode Toggle -->
     <v-card class="mb-4">
       <v-tabs v-model="activeTab" bg-color="primary">
-        <v-tab value="search">
+        <v-tab value="search" class="white-text">
           <v-icon start>mdi-magnify</v-icon>
           Quick Search
         </v-tab>
-        <v-tab value="management" v-if="authStore.isAdmin">
+        <v-tab value="management" v-if="authStore.isAdmin" class="white-text">
           <v-icon start>mdi-cog</v-icon>
           Management
         </v-tab>
@@ -478,6 +478,15 @@ function isMatchExpanded(index: number): boolean {
 .v-list-item,
 .v-alert {
   text-align: left !important;
+}
+
+/* White text for tabs */
+.white-text {
+  color: white !important;
+}
+
+.white-text .v-icon {
+  color: white !important;
 }
 
 code {

@@ -285,6 +285,8 @@ OpsFinder/
   - Layout: Category section headers with message counts, individual message cards (similar to search results), smooth expand/collapse animation
   - Benefits: Better readability, less clicking to view information, easier to scan and compare patterns, consistent with quick search UX
   - UX: Pattern visible at glance, flat structure, clear visual hierarchy, better spacing with mb-6 between categories and mb-4 between cards
+- ✅ **Fixed Tab Text Color to White** - Improved readability of "Quick Search" and "Management" tabs against dark primary background (2025-12-19)
+  - See: `docs/task/fix-tab-text-color-white.md`
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)
