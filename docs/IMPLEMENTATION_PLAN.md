@@ -303,6 +303,12 @@ OpsFinder/
   - Configuration: Added CSS preprocessor options to `vite.config.ts` with modern Sass compiler API
   - Warnings Suppressed: `@import`, `global-builtin`, `color-functions` (all from Vuetify 3.11.2 SCSS files)
   - Benefits: Clean build output, stays on latest Sass 1.94.2, ready for Vuetify Sass 3.0 updates
+- ✅ **Fixed Production Login 403 Error** - Resolved CORS origin mismatch causing frontend authentication failures (2025-12-19)
+  - See: `docs/task/fix-403-login-error.md`
+  - Root Cause: Production frontend URL (http://192.168.31.115:81) not in CORS allowed origins list
+  - Solution: Added ALLOWED_ORIGINS environment variable to production .env with complete origins list
+  - Configuration: `ALLOWED_ORIGINS=http://192.168.31.115:81,http://localhost:3000,http://localhost:5173,http://localhost:8080`
+  - Impact: Frontend login now works in production, maintains security with explicit origin allowlist
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)
