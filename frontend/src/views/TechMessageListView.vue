@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-card class="argon-card">
       <v-card-title class="d-flex align-center flex-wrap pa-4">
-        <v-icon class="icon-shape bg-gradient-primary text-white mr-2">mdi-alert-circle</v-icon>
+        <v-icon color="primary" size="large" class="mr-2">mdi-alert-circle-outline</v-icon>
         <span style="word-break: break-word; flex: 1 1 auto; min-width: 0;">Tech Message Knowledge Base</span>
         <v-btn v-if="authStore.isAdmin" color="primary" prepend-icon="mdi-plus" @click="showCreateDialog = true" class="mt-2">
           Add Pattern
@@ -36,7 +36,7 @@
         <div v-for="category in sortedCategories" :key="category" class="mb-6">
           <!-- Category Header -->
           <div class="d-flex align-center mb-3 pa-3 bg-grey-lighten-4 rounded">
-            <v-icon class="icon-shape icon-lg bg-gradient-info text-white mr-2">mdi-folder</v-icon>
+            <v-icon color="primary" size="large" class="mr-2">mdi-folder-outline</v-icon>
             <span class="font-weight-bold text-h6 mr-2" style="word-break: break-word; flex: 1 1 auto; min-width: 0;">{{ category }}</span>
             <v-chip size="small" variant="outlined" color="primary">{{ getCategoryMessageCount(category) }} messages</v-chip>
           </div>

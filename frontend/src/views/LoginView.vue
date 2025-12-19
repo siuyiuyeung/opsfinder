@@ -6,7 +6,7 @@
           <v-col cols="12" sm="8" md="6" lg="4" xl="3">
             <v-card class="mx-4 shadow-lg">
               <v-card-title class="text-h4 text-center py-6 text-primary d-flex align-center justify-center flex-wrap">
-                <v-icon size="large" class="icon-shape bg-gradient-primary text-white mr-2">mdi-shield-lock</v-icon>
+                <v-icon color="primary" size="x-large" class="mr-2">mdi-shield-lock</v-icon>
                 <span style="word-break: break-word;">OpsFinder</span>
               </v-card-title>
 

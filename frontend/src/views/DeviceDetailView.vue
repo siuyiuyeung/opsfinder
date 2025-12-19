@@ -8,7 +8,7 @@
 
         <v-card v-if="!deviceStore.loading && deviceStore.currentDevice">
           <v-card-title class="d-flex align-center">
-            <v-icon class="icon-shape bg-gradient-info text-white mr-2">mdi-server</v-icon>
+            <v-icon color="info" size="large" class="mr-2">mdi-server</v-icon>
             <span>Device Details</span>
             <v-spacer></v-spacer>
             <v-btn

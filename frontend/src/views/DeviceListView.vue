@@ -4,7 +4,7 @@
       <v-col cols="12">
         <v-card class="argon-card">
           <v-card-title class="d-flex align-center flex-wrap pa-4">
-            <v-icon class="icon-shape bg-gradient-info text-white mr-2">mdi-server</v-icon>
+            <v-icon color="info" size="large" class="mr-2">mdi-server</v-icon>
             <span style="word-break: break-word; flex: 1 1 auto; min-width: 0;">Devices</span>
             <v-btn
               v-if="authStore.isAdmin || authStore.isOperator"

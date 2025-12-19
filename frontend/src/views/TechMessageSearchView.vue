@@ -17,7 +17,7 @@
     <!-- Search Mode -->
     <v-card v-show="activeTab === 'search'" class="argon-card">
       <v-card-title class="text-h5 pa-4 text-left d-flex align-center">
-        <v-icon class="icon-shape icon-lg bg-gradient-success text-white mr-2">mdi-alert-circle-check</v-icon>
+        <v-icon color="success" size="large" class="mr-2">mdi-magnify</v-icon>
         <span style="word-break: break-word;">Find Action for Your Issue</span>
       </v-card-title>
 
@@ -179,7 +179,7 @@
                 <!-- Recommended Action -->
                 <div v-if="match.recommendedAction" class="mb-4 text-left">
                   <div class="d-flex align-center flex-wrap mb-2">
-                    <v-icon class="icon-shape icon-lg bg-gradient-warning text-white mr-2">mdi-star</v-icon>
+                    <v-icon color="warning" size="large" class="mr-2">mdi-star</v-icon>
                     <strong class="text-h6 text-grey-darken-3 mr-2">RECOMMENDED ACTION</strong>
                     <v-chip size="small" class="mt-1" color="warning" variant="tonal">
                       {{ match.recommendedAction.occurrenceMin }}{{ match.recommendedAction.occurrenceMax ? `-${match.recommendedAction.occurrenceMax}` : '+' }} occurrences
