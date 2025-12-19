@@ -50,6 +50,7 @@ services:
       LOGGING_LEVEL_ROOT: ${LOG_LEVEL:-INFO}
       LOGGING_LEVEL_COM_IGSL_OPSFINDER: ${APP_LOG_LEVEL:-DEBUG}
       JAVA_OPTS: "-Xms512m -Xmx1024m"
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8080}
     volumes:
       - ./logs/backend:/var/log/opsfinder/backend
     ports:

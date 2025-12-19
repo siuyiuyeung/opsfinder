@@ -306,9 +306,10 @@ OpsFinder/
 - ✅ **Fixed Production Login 403 Error** - Resolved CORS origin mismatch causing frontend authentication failures (2025-12-19)
   - See: `docs/task/fix-403-login-error.md`
   - Root Cause: Production frontend URL (http://192.168.31.115:81) not in CORS allowed origins list
-  - Solution: Added ALLOWED_ORIGINS environment variable to production .env with complete origins list
-  - Configuration: `ALLOWED_ORIGINS=http://192.168.31.115:81,http://localhost:3000,http://localhost:5173,http://localhost:8080`
-  - Impact: Frontend login now works in production, maintains security with explicit origin allowlist
+  - Solution: Added ALLOWED_ORIGINS environment variable to docker-compose.yml with .env override support
+  - Implementation: Updated `docker-compose.yml` backend service with `ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8080}`
+  - Configuration: Set `ALLOWED_ORIGINS` in `.env` file for production deployments
+  - Impact: Works out-of-the-box for development, configurable for production, maintains security with explicit origin allowlist
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)

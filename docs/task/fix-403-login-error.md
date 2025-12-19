@@ -283,3 +283,73 @@ ALLOWED_ORIGINS=http://192.168.31.115:81,http://localhost:3000,http://localhost:
 - Backend container restart required after .env changes: `docker compose restart backend`
 - Environment variable validated in backend logs
 - CORS configuration now environment-aware and flexible
+
+---
+
+## Implementation in docker-compose.yml (2025-12-19)
+
+### Changes Made
+
+**File Modified**: `docker-compose.yml`
+
+**Added Environment Variable** (line 53):
+```yaml
+ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8080}
+```
+
+### How It Works
+
+**Default Behavior** (no .env file):
+- Uses development defaults: `http://localhost:3000,http://localhost:5173,http://localhost:8080`
+- Suitable for local development
+
+**Production Deployment** (with .env file):
+1. Create `.env` file in project root
+2. Set `ALLOWED_ORIGINS` with your production URL(s):
+   ```bash
+   ALLOWED_ORIGINS=http://192.168.31.115:81,http://localhost:3000,http://localhost:5173
+   ```
+3. Restart backend: `docker compose restart backend`
+
+**Example .env Configuration**:
+The `.env.example` file already includes CORS documentation (lines 33-45):
+```bash
+# CORS Configuration
+# ALLOWED_ORIGINS - Controls which frontend domains can access the backend API
+# Format: Comma-separated list of URLs (no spaces)
+#
+# Development (default in application.yml): http://localhost:3000,http://localhost:5173,http://localhost:8080
+# Production: Set this to your actual frontend domain(s)
+#
+# Examples:
+#   Single domain:    ALLOWED_ORIGINS=https://your-domain.com
+#   Multiple domains: ALLOWED_ORIGINS=https://your-domain.com,https://www.your-domain.com
+#
+# Security: Never use "*" (wildcard) in production
+ALLOWED_ORIGINS=https://your-domain.com
+```
+
+### Benefits
+
+✅ **Out-of-the-box Development**: Works locally without configuration
+✅ **Production-Ready**: Override via .env for deployment
+✅ **Documented**: Clear examples in .env.example
+✅ **Secure**: Explicit origin allowlist, no wildcards
+✅ **Flexible**: Easy to add/remove origins without code changes
+
+### Usage Instructions
+
+**For Local Development**:
+No changes needed - defaults work out of the box
+
+**For Production Deployment**:
+1. Copy `.env.example` to `.env`
+2. Update `ALLOWED_ORIGINS` with your production domain(s)
+3. Ensure format: `http://domain:port,http://domain2:port` (no spaces)
+4. Deploy: `docker compose up -d`
+
+**For Testing**:
+Verify environment variable is loaded:
+```bash
+docker compose exec backend env | grep ALLOWED_ORIGINS
+```
