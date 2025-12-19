@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
@@ -12,12 +12,24 @@ const handleLogout = async () => {
   router.push('/login')
 }
 
-const navigationItems = [
+const baseNavigationItems = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/' },
   { title: 'Devices', icon: 'mdi-server', to: '/devices' },
   { title: 'Tech Messages', icon: 'mdi-alert-circle', to: '/tech-messages' },
   { title: 'Incidents', icon: 'mdi-file-document-alert', to: '/incidents' },
 ]
+
+const adminNavigationItems = [
+  { title: 'User Management', icon: 'mdi-account-group', to: '/users', adminOnly: true },
+]
+
+const navigationItems = computed(() => {
+  const items = [...baseNavigationItems]
+  if (authStore.isAdmin) {
+    items.push(...adminNavigationItems)
+  }
+  return items
+})
 </script>
 
 <template>
@@ -32,7 +44,8 @@ const navigationItems = [
     </v-app-bar>
 
     <v-navigation-drawer v-if="authStore.isAuthenticated" v-model="drawer" temporary>
-      <v-list>
+      <v-list density="compact" nav>
+        <v-list-subheader>NAVIGATION</v-list-subheader>
         <v-list-item
           v-for="item in navigationItems"
           :key="item.title"
@@ -43,6 +56,16 @@ const navigationItems = [
             <v-icon class="text-primary">{{ item.icon }}</v-icon>
           </template>
           <v-list-item-title>{{ item.title }}</v-list-item-title>
+        </v-list-item>
+
+        <v-divider class="my-2" />
+
+        <v-list-item>
+          <template v-slot:prepend>
+            <v-icon class="text-primary">mdi-account</v-icon>
+          </template>
+          <v-list-item-title>{{ authStore.user?.username }}</v-list-item-title>
+          <v-list-item-subtitle>{{ authStore.user?.role }}</v-list-item-subtitle>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>

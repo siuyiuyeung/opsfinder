@@ -60,7 +60,20 @@
                 </v-form>
               </v-card-text>
 
-              <v-card-text class="text-center text-caption text-medium-emphasis pb-6" style="word-wrap: break-word;">
+              <v-card-text class="pa-6 pt-0">
+                <v-divider class="mb-4" />
+                <v-btn
+                  variant="text"
+                  color="primary"
+                  block
+                  @click="router.push({ name: 'Register' })"
+                  :disabled="authStore.loading"
+                >
+                  Don't have an account? Register
+                </v-btn>
+              </v-card-text>
+
+              <v-card-text class="text-center text-caption text-medium-emphasis pb-6 pt-0" style="word-wrap: break-word;">
                 OpsFinder - Production Operations Tracker
               </v-card-text>
             </v-card>

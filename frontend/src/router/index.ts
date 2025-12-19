@@ -9,6 +9,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: false },
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/RegisterView.vue'),
+    meta: { requiresAuth: false },
+  },
+  {
     path: '/',
     name: 'Dashboard',
     component: () => import('@/views/DashboardView.vue'),
@@ -44,6 +50,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/IncidentCreateView.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/users',
+    name: 'UserManagement',
+    component: () => import('@/views/UserManagementView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
 ]
 
 const router = createRouter({
@@ -52,17 +64,21 @@ const router = createRouter({
 })
 
 /**
- * Navigation guard to check authentication.
+ * Navigation guard to check authentication and authorization.
  */
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
   const requiresAuth = to.meta.requiresAuth !== false
+  const requiresAdmin = to.meta.requiresAdmin === true
 
   if (requiresAuth && !authStore.isAuthenticated) {
     // Redirect to login if not authenticated
     next({ name: 'Login', query: { redirect: to.fullPath } })
-  } else if (to.name === 'Login' && authStore.isAuthenticated) {
+  } else if ((to.name === 'Login' || to.name === 'Register') && authStore.isAuthenticated) {
     // Redirect to dashboard if already authenticated
+    next({ name: 'Dashboard' })
+  } else if (requiresAdmin && !authStore.isAdmin) {
+    // Redirect to dashboard if not admin
     next({ name: 'Dashboard' })
   } else {
     next()

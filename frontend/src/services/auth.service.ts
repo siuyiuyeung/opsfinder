@@ -1,10 +1,19 @@
 import api from './api'
 import type { LoginRequest, AuthResponse, UserResponse } from '@/types/auth'
+import type { RegisterRequest } from '@/types/user'
 
 /**
  * Authentication service for API calls.
  */
 export const authService = {
+  /**
+   * Register a new user (public endpoint).
+   */
+  async register(request: RegisterRequest): Promise<UserResponse> {
+    const response = await api.post<UserResponse>('/auth/register', request)
+    return response.data
+  },
+
   /**
    * Login user with username and password.
    */

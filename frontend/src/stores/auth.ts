@@ -37,6 +37,28 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * Register a new user.
+   */
+  async function register(credentials: { username: string; password: string; fullName?: string }) {
+    loading.value = true
+    error.value = null
+
+    try {
+      await authService.register(credentials)
+      return true
+    } catch (err: any) {
+      if (err.response?.status === 409) {
+        error.value = 'Username already exists. Please choose a different username.'
+      } else {
+        error.value = err.response?.data?.message || 'Registration failed. Please try again.'
+      }
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
    * Login user with credentials.
    */
   async function login(credentials: LoginRequest) {
@@ -63,7 +85,11 @@ export const useAuthStore = defineStore('auth', () => {
 
       return true
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Login failed. Please check your credentials.'
+      if (err.response?.status === 403) {
+        error.value = 'Your account is pending approval. Please contact an administrator.'
+      } else {
+        error.value = err.response?.data?.message || 'Login failed. Please check your credentials.'
+      }
       return false
     } finally {
       loading.value = false
@@ -135,6 +161,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAdmin,
     isOperator,
     // Actions
+    register,
     login,
     logout,
     refreshUser,

@@ -1,9 +1,11 @@
 package com.igsl.opsfinder.controller;
 
 import com.igsl.opsfinder.dto.request.LoginRequest;
+import com.igsl.opsfinder.dto.request.RegisterRequest;
 import com.igsl.opsfinder.dto.response.AuthResponse;
 import com.igsl.opsfinder.dto.response.UserResponse;
 import com.igsl.opsfinder.service.AuthService;
+import com.igsl.opsfinder.service.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +18,7 @@ import java.util.Map;
 
 /**
  * REST controller for authentication endpoints.
- * Handles login, token refresh, and current user retrieval.
+ * Handles login, registration, token refresh, and current user retrieval.
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -27,6 +29,23 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserService userService;
+
+    /**
+     * Register a new user.
+     * Public endpoint - no authentication required.
+     *
+     * @param registerRequest registration credentials
+     * @return UserResponse with created user info (active=false, pending approval)
+     */
+    @PostMapping("/register")
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        logger.info("Registration request received for username: {}", registerRequest.getUsername());
+        UserResponse response = userService.register(registerRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
     /**
      * Login endpoint.

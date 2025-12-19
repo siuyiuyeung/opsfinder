@@ -57,6 +57,14 @@ public class AuthService {
         User user = userRepository.findByUsername(loginRequest.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + loginRequest.getUsername()));
 
+        // Check if user is approved (active=true)
+        if (!Boolean.TRUE.equals(user.getActive())) {
+            logger.warn("Login attempt by unapproved user: {}", user.getUsername());
+            throw new com.igsl.opsfinder.exception.UserNotApprovedException(
+                    "Your account is pending approval. Please contact an administrator."
+            );
+        }
+
         // Generate tokens
         String accessToken = tokenProvider.generateToken(authentication);
         String refreshToken = tokenProvider.generateRefreshToken(user.getUsername());

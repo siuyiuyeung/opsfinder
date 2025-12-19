@@ -43,3 +43,5 @@ out/
 
 # Log directories (mounted from Docker containers)
 logs/
+
+data/
