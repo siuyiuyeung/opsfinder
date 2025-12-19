@@ -8,7 +8,7 @@
 
         <v-card v-if="!deviceStore.loading && deviceStore.currentDevice">
           <v-card-title class="d-flex align-center">
-            <v-icon class="mr-2">mdi-server</v-icon>
+            <v-icon class="icon-shape bg-gradient-info text-white mr-2">mdi-server</v-icon>
             <span>Device Details</span>
             <v-spacer></v-spacer>
             <v-btn
@@ -119,7 +119,7 @@
         </v-card>
 
         <v-card v-else class="text-center pa-8">
-          <v-icon size="64" color="error">mdi-alert-circle</v-icon>
+          <v-icon size="64" class="text-danger">mdi-alert-circle</v-icon>
           <p class="text-h6 mt-2">Device not found</p>
         </v-card>
       </v-col>

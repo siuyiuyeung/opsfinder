@@ -4,7 +4,7 @@
       <v-col cols="12">
         <v-card class="argon-card">
           <v-card-title class="d-flex align-center flex-wrap pa-4">
-            <v-icon class="mr-2" color="primary">mdi-server</v-icon>
+            <v-icon class="icon-shape bg-gradient-info text-white mr-2">mdi-server</v-icon>
             <span style="word-break: break-word; flex: 1 1 auto; min-width: 0;">Devices</span>
             <v-btn
               v-if="authStore.isAdmin || authStore.isOperator"
@@ -110,7 +110,7 @@
 
               <template v-slot:no-data>
                 <div class="text-center pa-4">
-                  <v-icon size="64" color="grey">mdi-server-off</v-icon>
+                  <v-icon size="64" class="text-secondary">mdi-server-off</v-icon>
                   <p class="text-h6 mt-2">No devices found</p>
                 </div>
               </template>

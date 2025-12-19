@@ -23,11 +23,11 @@ const navigationItems = [
 <template>
   <v-app>
     <v-app-bar v-if="authStore.isAuthenticated" color="primary" prominent>
-      <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon color="white" variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title>OpsFinder</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn icon @click="handleLogout">
-        <v-icon>mdi-logout</v-icon>
+        <v-icon class="text-white">mdi-logout</v-icon>
       </v-btn>
     </v-app-bar>
 
@@ -40,7 +40,7 @@ const navigationItems = [
           link
         >
           <template v-slot:prepend>
-            <v-icon>{{ item.icon }}</v-icon>
+            <v-icon class="text-primary">{{ item.icon }}</v-icon>
           </template>
           <v-list-item-title>{{ item.title }}</v-list-item-title>
         </v-list-item>

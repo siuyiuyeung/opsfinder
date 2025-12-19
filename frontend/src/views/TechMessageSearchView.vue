@@ -4,11 +4,11 @@
     <v-card class="mb-4">
       <v-tabs v-model="activeTab" bg-color="primary">
         <v-tab value="search" class="white-text">
-          <v-icon start>mdi-magnify</v-icon>
+          <v-icon start class="text-white">mdi-magnify</v-icon>
           Quick Search
         </v-tab>
         <v-tab value="management" v-if="authStore.isAdmin" class="white-text">
-          <v-icon start>mdi-cog</v-icon>
+          <v-icon start class="text-white">mdi-cog</v-icon>
           Management
         </v-tab>
       </v-tabs>
@@ -17,7 +17,7 @@
     <!-- Search Mode -->
     <v-card v-show="activeTab === 'search'" class="argon-card">
       <v-card-title class="text-h5 pa-4 text-left d-flex align-center">
-        <v-icon class="mr-2" size="large" color="primary">mdi-alert-circle-check</v-icon>
+        <v-icon class="icon-shape icon-lg bg-gradient-success text-white mr-2">mdi-alert-circle-check</v-icon>
         <span style="word-break: break-word;">Find Action for Your Issue</span>
       </v-card-title>
 
@@ -38,7 +38,7 @@
               @keydown.enter.prevent="performSearch"
             >
               <template v-slot:prepend-inner>
-                <v-icon size="large" color="primary">mdi-magnify</v-icon>
+                <v-icon size="large" class="text-primary">mdi-magnify</v-icon>
               </template>
             </v-textarea>
 
@@ -62,7 +62,7 @@
                 :disabled="!searchText || searchText.trim().length < 3"
                 @click="performSearch"
               >
-                <v-icon start>mdi-magnify</v-icon>
+                <v-icon start class="text-white">mdi-magnify</v-icon>
                 Search
               </v-btn>
 
@@ -179,7 +179,7 @@
                 <!-- Recommended Action -->
                 <div v-if="match.recommendedAction" class="mb-4 text-left">
                   <div class="d-flex align-center flex-wrap mb-2">
-                    <v-icon color="warning" size="large" class="mr-2">mdi-star</v-icon>
+                    <v-icon class="icon-shape icon-lg bg-gradient-warning text-white mr-2">mdi-star</v-icon>
                     <strong class="text-h6 text-grey-darken-3 mr-2">RECOMMENDED ACTION</strong>
                     <v-chip size="small" class="mt-1" color="warning" variant="tonal">
                       {{ match.recommendedAction.occurrenceMin }}{{ match.recommendedAction.occurrenceMax ? `-${match.recommendedAction.occurrenceMax}` : '+' }} occurrences
@@ -195,7 +195,7 @@
                       class="mt-3"
                       @click="copyToClipboard(match.recommendedAction.actionText)"
                     >
-                      <v-icon start>mdi-content-copy</v-icon>
+                      <v-icon start class="text-warning-darken-2">mdi-content-copy</v-icon>
                       Copy Action
                     </v-btn>
                   </v-card>
@@ -233,7 +233,7 @@
         <!-- Search History -->
         <v-card v-if="searchHistory.length > 0 && !searchPerformed" variant="outlined" class="mt-6">
           <v-card-title class="text-subtitle-1 pa-3 text-left">
-            <v-icon class="mr-2">mdi-history</v-icon>
+            <v-icon class="text-primary mr-2">mdi-history</v-icon>
             Recent Searches
           </v-card-title>
           <v-card-text class="pa-3 text-left">
