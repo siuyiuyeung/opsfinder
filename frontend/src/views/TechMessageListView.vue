@@ -32,83 +32,95 @@
           </v-col>
         </v-row>
 
-        <!-- Tech Message List - Grouped by Category then Severity -->
-        <v-expansion-panels>
-          <v-expansion-panel v-for="category in sortedCategories" :key="category" class="mb-2">
-            <v-expansion-panel-title class="pa-4">
-              <div class="d-flex align-center flex-wrap w-100">
-                <v-icon class="mr-2" color="primary">mdi-folder</v-icon>
-                <span class="font-weight-bold text-h6 mr-2" style="word-break: break-word; flex: 1 1 auto; min-width: 0;">{{ category }}</span>
-                <v-chip size="small" variant="outlined" color="primary" class="mt-1">{{ getCategoryMessageCount(category) }} messages</v-chip>
-              </div>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text class="pa-3">
-              <v-expansion-panels class="mt-2">
-                <v-expansion-panel v-for="severity in getActiveSeverities(category)" :key="severity" class="mb-2">
-                  <v-expansion-panel-title class="pa-3">
-                    <div class="d-flex align-center flex-wrap w-100">
-                      <v-chip :color="getSeverityColor(severity)" size="small" class="mr-2 mb-1">
-                        {{ severity }}
-                      </v-chip>
-                      <v-spacer></v-spacer>
-                      <span class="text-caption text-grey mb-1">{{ groupedMessages[category][severity].length }} messages</span>
+        <!-- Tech Message List - Grouped by Category with Card Layout -->
+        <div v-for="category in sortedCategories" :key="category" class="mb-6">
+          <!-- Category Header -->
+          <div class="d-flex align-center mb-3 pa-3 bg-grey-lighten-4 rounded">
+            <v-icon class="mr-2" color="primary" size="large">mdi-folder</v-icon>
+            <span class="font-weight-bold text-h6 mr-2" style="word-break: break-word; flex: 1 1 auto; min-width: 0;">{{ category }}</span>
+            <v-chip size="small" variant="outlined" color="primary">{{ getCategoryMessageCount(category) }} messages</v-chip>
+          </div>
+
+          <!-- Messages in Category -->
+          <div v-for="severity in getActiveSeverities(category)" :key="severity">
+            <v-card
+              v-for="techMessage in groupedMessages[category][severity]"
+              :key="techMessage.id"
+              class="mb-4 shadow"
+              variant="outlined"
+            >
+              <v-card-title class="d-flex align-center flex-wrap pa-4 text-left">
+                <v-chip :color="getSeverityColor(techMessage.severity)" class="mr-2 mb-2" variant="tonal">
+                  {{ techMessage.severity }}
+                </v-chip>
+                <span class="text-h6 text-grey-darken-4 mr-2 mb-2" style="word-break: break-word; flex: 1 1 auto; min-width: 0;">{{ techMessage.category }}</span>
+                <v-chip size="small" color="info" variant="outlined" class="mr-2 mb-2">
+                  {{ techMessage.actionLevels.length }} action level{{ techMessage.actionLevels.length !== 1 ? 's' : '' }}
+                </v-chip>
+                <v-btn
+                  @click="toggleMessageDetails(techMessage.id)"
+                  :icon="isMessageExpanded(techMessage.id) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                  size="small"
+                  variant="text"
+                  class="mb-2"
+                ></v-btn>
+              </v-card-title>
+
+              <v-card-text class="pa-4 text-left">
+                <!-- Pattern (always visible) -->
+                <div class="mb-3 text-body-1 text-left">
+                  <strong class="text-grey-darken-3">Pattern:</strong>
+                  <pre class="mt-2 pa-3 bg-grey-lighten-4 rounded" style="overflow-x: auto; word-wrap: break-word; white-space: pre-wrap; max-width: 100%;"><code class="text-grey-darken-4">{{ techMessage.pattern }}</code></pre>
+                </div>
+
+                <!-- Collapsible Details -->
+                <v-expand-transition>
+                  <div v-show="isMessageExpanded(techMessage.id)">
+                    <!-- Description -->
+                    <div v-if="techMessage.description" class="mb-3 text-left">
+                      <strong class="text-grey-darken-3 d-block mb-2">Description:</strong>
+                      <p class="mb-0 text-grey-darken-2" style="word-wrap: break-word; overflow-wrap: break-word;">{{ techMessage.description }}</p>
                     </div>
-                  </v-expansion-panel-title>
-                  <v-expansion-panel-text class="pa-3">
-                    <v-expansion-panels class="mt-2">
-                      <v-expansion-panel v-for="techMessage in groupedMessages[category][severity]" :key="techMessage.id" class="mb-2">
-                        <v-expansion-panel-title class="pa-3">
-                          <div class="d-flex align-center flex-wrap w-100">
-                            <span class="font-weight-medium mr-2" style="word-break: break-word; flex: 1 1 auto; min-width: 0;">Pattern: {{ truncatePattern(techMessage.pattern) }}</span>
-                            <span class="text-caption text-grey mt-1">{{ techMessage.actionLevels.length }} action levels</span>
-                          </div>
-                        </v-expansion-panel-title>
-                        <v-expansion-panel-text class="pa-4">
-                          <div class="mb-3">
-                            <strong class="d-block mb-2">Full Pattern:</strong>
-                            <pre class="pa-3 bg-grey-lighten-4 rounded" style="overflow-x: auto; word-wrap: break-word; white-space: pre-wrap; max-width: 100%;"><code class="text-grey-darken-4">{{ techMessage.pattern }}</code></pre>
-                          </div>
-                          <div v-if="techMessage.description" class="mb-3">
-                            <strong class="d-block mb-2">Description:</strong>
-                            <p class="mb-0" style="word-wrap: break-word; overflow-wrap: break-word;">{{ techMessage.description }}</p>
-                          </div>
-                          <div v-if="techMessage.actionLevels.length > 0" class="mb-3">
-                            <strong class="d-block mb-2">Action Levels:</strong>
-                            <v-list density="compact" class="rounded" bg-color="grey-lighten-5">
-                              <v-list-item v-for="action in techMessage.actionLevels" :key="action.id" class="mb-2">
-                                <v-list-item-title>
-                                  <div class="mb-2 d-flex flex-wrap">
-                                    <v-chip size="x-small" class="mr-2 mb-1" variant="tonal" color="primary">
-                                      {{ action.occurrenceMin }}{{ action.occurrenceMax ? `-${action.occurrenceMax}` : '+' }} occurrences
-                                    </v-chip>
-                                    <v-chip size="x-small" class="mb-1" variant="outlined" color="grey-darken-2">
-                                      Priority: {{ action.priority }}
-                                    </v-chip>
-                                  </div>
-                                  <div style="word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap;">{{ action.actionText }}</div>
-                                </v-list-item-title>
-                              </v-list-item>
-                            </v-list>
-                          </div>
-                          <div class="mt-4" v-if="authStore.isAdmin">
-                            <v-btn size="small" @click="editTechMessage(techMessage)" class="mr-2">
-                              <v-icon start>mdi-pencil</v-icon>
-                              Edit
-                            </v-btn>
-                            <v-btn size="small" color="error" @click="confirmDelete(techMessage)">
-                              <v-icon start>mdi-delete</v-icon>
-                              Delete
-                            </v-btn>
-                          </div>
-                        </v-expansion-panel-text>
-                      </v-expansion-panel>
-                    </v-expansion-panels>
-                  </v-expansion-panel-text>
-                </v-expansion-panel>
-              </v-expansion-panels>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
+
+                    <!-- Action Levels -->
+                    <div v-if="techMessage.actionLevels.length > 0" class="mb-3 text-left">
+                      <strong class="text-grey-darken-3 d-block mb-2">Action Levels:</strong>
+                      <v-card
+                        v-for="action in techMessage.actionLevels"
+                        :key="action.id"
+                        class="mb-3 pa-3"
+                        variant="tonal"
+                        color="grey-lighten-4"
+                      >
+                        <div class="mb-2 d-flex flex-wrap">
+                          <v-chip size="small" class="mr-2 mb-1" variant="tonal" color="primary">
+                            {{ action.occurrenceMin }}{{ action.occurrenceMax ? `-${action.occurrenceMax}` : '+' }} occurrences
+                          </v-chip>
+                          <v-chip size="small" class="mb-1" variant="outlined" color="grey-darken-2">
+                            Priority: {{ action.priority }}
+                          </v-chip>
+                        </div>
+                        <div class="text-grey-darken-4" style="word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap;">{{ action.actionText }}</div>
+                      </v-card>
+                    </div>
+
+                    <!-- Admin Actions -->
+                    <div v-if="authStore.isAdmin" class="mt-4 text-left">
+                      <v-btn size="small" @click="editTechMessage(techMessage)" class="mr-2">
+                        <v-icon start>mdi-pencil</v-icon>
+                        Edit
+                      </v-btn>
+                      <v-btn size="small" color="error" @click="confirmDelete(techMessage)">
+                        <v-icon start>mdi-delete</v-icon>
+                        Delete
+                      </v-btn>
+                    </div>
+                  </div>
+                </v-expand-transition>
+              </v-card-text>
+            </v-card>
+          </div>
+        </div>
 
         <!-- Pagination -->
         <div class="text-center mt-4" v-if="totalPages > 1">
@@ -343,6 +355,9 @@ const showCreateDialog = ref(false)
 const editMode = ref(false)
 const currentTechMessageId = ref<number | null>(null)
 
+// Expansion state for message details
+const expandedMessages = ref<Set<number>>(new Set())
+
 // Severity order (highest to lowest priority)
 const severityOrder = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']
 
@@ -381,12 +396,6 @@ function getCategoryMessageCount(category: string): number {
 function getActiveSeverities(category: string): string[] {
   const severities = Object.keys(groupedMessages.value[category] || {})
   return severityOrder.filter(sev => severities.includes(sev))
-}
-
-// Truncate pattern for display in title
-function truncatePattern(pattern: string, maxLength: number = 50): string {
-  if (pattern.length <= maxLength) return pattern
-  return pattern.substring(0, maxLength) + '...'
 }
 
 // Form state
@@ -502,6 +511,18 @@ function getSeverityColor(severity: string) {
     CRITICAL: 'error'
   }
   return colors[severity] || 'grey'
+}
+
+function toggleMessageDetails(messageId: number) {
+  if (expandedMessages.value.has(messageId)) {
+    expandedMessages.value.delete(messageId)
+  } else {
+    expandedMessages.value.add(messageId)
+  }
+}
+
+function isMessageExpanded(messageId: number): boolean {
+  return expandedMessages.value.has(messageId)
 }
 
 async function editTechMessage(techMessage: TechMessage) {
