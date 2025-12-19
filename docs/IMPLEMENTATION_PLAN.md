@@ -292,6 +292,17 @@ OpsFinder/
   - Features: Circular gradient backgrounds on header icons, consistent Argon color classes, enhanced visual hierarchy
   - Components: App.vue (menu, logout, navigation), LoginView (header shield, login button), TechMessageListView (header, categories, actions), TechMessageSearchView (tabs, search, recommendations), DeviceListView (header, states), DeviceDetailView (header, error states)
   - UX: Professional Argon aesthetic, semantic gradient colors (primary, info, success, warning), improved icon visibility and contrast
+- ✅ **Added Custom Favicon** - Created magnifying glass favicon representing OpsFinder search functionality (2025-12-19)
+  - See: `docs/task/add-favicon.md`, `docs/task/fix-nginx-favicon-error.md`
+  - Features: Blue (#2563eb) magnifying glass icon matching Argon theme, dual format support (ICO + SVG)
+  - Files: `frontend/public/favicon.ico` (1.1KB), `frontend/public/favicon.svg` (251 bytes)
+  - Integration: Vite copies to build output, nginx serves from /usr/share/nginx/html/
+  - Fix: Moved from backend to frontend to resolve nginx 404 error
+- ✅ **Suppressed Sass Deprecation Warnings** - Configured Vite to silence Vuetify SCSS deprecation warnings (2025-12-19)
+  - See: `docs/task/fix-sass-deprecation-warnings.md`
+  - Configuration: Added CSS preprocessor options to `vite.config.ts` with modern Sass compiler API
+  - Warnings Suppressed: `@import`, `global-builtin`, `color-functions` (all from Vuetify 3.11.2 SCSS files)
+  - Benefits: Clean build output, stays on latest Sass 1.94.2, ready for Vuetify Sass 3.0 updates
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)
