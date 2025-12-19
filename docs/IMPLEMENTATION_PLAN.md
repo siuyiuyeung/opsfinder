@@ -310,6 +310,13 @@ OpsFinder/
   - Implementation: Updated `docker-compose.yml` backend service with `ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8080}`
   - Configuration: Set `ALLOWED_ORIGINS` in `.env` file for production deployments
   - Impact: Works out-of-the-box for development, configurable for production, maintains security with explicit origin allowlist
+- ✅ **Fixed Missing Backend Logs in Production** - Enabled persistent file logging with proper permissions (2025-12-19)
+  - See: `docs/task/fix-backend-logging.md`
+  - Root Cause: Dockerfile didn't create log directory, non-root user couldn't write to /var/log/
+  - Solution: Create log directory and set ownership before switching to non-root user in Dockerfile
+  - Implementation: Updated `Dockerfile` to create `/var/log/opsfinder/backend/` with `spring:spring` ownership
+  - Files: Created `logs/backend/` host directory for volume mount
+  - Impact: Persistent logs with rotation (100MB max, 30 days, 3GB cap), accessible on host filesystem
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)

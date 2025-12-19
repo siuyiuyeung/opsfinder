@@ -21,8 +21,13 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup -S spring && adduser -S spring -G spring
+# Create log directory with proper permissions
+RUN mkdir -p /var/log/opsfinder/backend && \
+    addgroup -S spring && \
+    adduser -S spring -G spring && \
+    chown -R spring:spring /var/log/opsfinder
+
+# Switch to non-root user
 USER spring:spring
 
 # Copy built JAR from build stage
