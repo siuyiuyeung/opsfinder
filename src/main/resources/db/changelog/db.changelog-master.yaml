@@ -5,6 +5,8 @@ databaseChangeLog:
       file: db/changelog/changelog-002-devices.yaml
   - include:
       file: db/changelog/changelog-003-tech-messages.yaml
+  - include:
+      file: db/changelog/changelog-004-add-audit-columns.yaml
   # Future changesets will be added here
   # - include:
-  #     file: db/changelog/changelog-004-incidents.yaml
+  #     file: db/changelog/changelog-005-incidents.yaml

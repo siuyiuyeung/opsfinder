@@ -1,0 +1,112 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-add-audit-columns-to-users
+      author: OpsFinder
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: created_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+
+      rollback:
+        - dropColumn:
+            tableName: users
+            columnName: created_by
+        - dropColumn:
+            tableName: users
+            columnName: updated_by
+
+  - changeSet:
+      id: 004-add-audit-columns-to-devices
+      author: OpsFinder
+      changes:
+        - addColumn:
+            tableName: devices
+            columns:
+              - column:
+                  name: created_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+
+      rollback:
+        - dropColumn:
+            tableName: devices
+            columnName: created_by
+        - dropColumn:
+            tableName: devices
+            columnName: updated_by
+
+  - changeSet:
+      id: 004-add-audit-columns-to-tech-messages
+      author: OpsFinder
+      changes:
+        - addColumn:
+            tableName: tech_messages
+            columns:
+              - column:
+                  name: created_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+
+      rollback:
+        - dropColumn:
+            tableName: tech_messages
+            columnName: created_by
+        - dropColumn:
+            tableName: tech_messages
+            columnName: updated_by
+
+  - changeSet:
+      id: 004-add-audit-columns-to-action-levels
+      author: OpsFinder
+      changes:
+        - addColumn:
+            tableName: action_levels
+            columns:
+              - column:
+                  name: created_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+
+      rollback:
+        - dropColumn:
+            tableName: action_levels
+            columnName: created_by
+        - dropColumn:
+            tableName: action_levels
+            columnName: updated_by
