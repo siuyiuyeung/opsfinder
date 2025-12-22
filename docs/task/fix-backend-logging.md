@@ -232,7 +232,59 @@ Consider adding log aggregation tools:
    USER spring:spring
    ```
 
-2. **Host Directory Created**:
+2. **application.yml Updated** (lines 67-77):
+   ```yaml
+   logging:
+     file:
+       name: /var/log/opsfinder/backend/opsfinder.log
+     pattern:
+       console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+       file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+     logback:
+       rollingpolicy:
+         max-file-size: 50MB
+         max-history: 7
+         total-size-cap: 500MB
+         file-name-pattern: /var/log/opsfinder/backend/opsfinder-%d{yyyy-MM-dd}.%i.log
+   ```
+   - Enabled file logging for development environment
+   - Logs to both console AND file
+   - 7 days retention, 50MB max file size, 500MB total cap
+
+3. **application-prod.yml Updated** (lines 45-55):
+   ```yaml
+   logging:
+     file:
+       name: /var/log/opsfinder/backend/opsfinder.log
+     pattern:
+       console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+       file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+     logback:
+       rollingpolicy:
+         max-file-size: 100MB
+         max-history: 30
+         total-size-cap: 3GB
+         file-name-pattern: /var/log/opsfinder/backend/opsfinder-%d{yyyy-MM-dd}.%i.log
+   ```
+   - Logs to both console AND file in production
+   - 30 days retention, 100MB max file size, 3GB total cap
+   - Consistent pattern format between console and file
+
+4. **docker-compose.yml Verified** (line 55):
+   ```yaml
+   volumes:
+     - ./logs/backend:/var/log/opsfinder/backend
+   ```
+   - Volume mount already configured
+
+5. **docker-compose.app.yml Verified** (line 23):
+   ```yaml
+   volumes:
+     - ./logs/backend:/var/log/opsfinder/backend
+   ```
+   - Volume mount already configured for external database setup
+
+6. **Host Directory Created**:
    - Created `logs/backend/` directory on host
    - Ready for volume mount from docker-compose.yml
 
@@ -288,4 +340,22 @@ Consider adding log aggregation tools:
 ### Files Modified
 
 - ✅ `Dockerfile` - Added log directory creation and ownership
+- ✅ `src/main/resources/application.yml` - Added file logging configuration for development
+- ✅ `src/main/resources/application-prod.yml` - Updated file logging configuration for production
+- ✅ `docker-compose.yml` - Verified volume mount configuration (already present)
+- ✅ `docker-compose.app.yml` - Verified volume mount configuration (already present)
 - ✅ `logs/backend/` - Created host mount point directory
+
+### Configuration Summary
+
+**Development (application.yml)**:
+- Logs to: Console + `/var/log/opsfinder/backend/opsfinder.log`
+- Rotation: 50MB max file size
+- Retention: 7 days
+- Total cap: 500MB
+
+**Production (application-prod.yml)**:
+- Logs to: Console + `/var/log/opsfinder/backend/opsfinder.log`
+- Rotation: 100MB max file size
+- Retention: 30 days
+- Total cap: 3GB

@@ -34,17 +34,18 @@ jwt:
   expiration: 86400000  # 24 hours
   refresh-expiration: 604800000  # 7 days
 
-# Logging - Less verbose in production
+# Logging - Less verbose in production, outputs to both console and file
 logging:
   level:
     com.igsl.opsfinder: ${LOGGING_LEVEL_COM_IGSL_OPSFINDER:INFO}
     org.springframework.security: WARN
     org.springframework.web: WARN
     org.hibernate.SQL: WARN
+    liquibase: WARN
   file:
     name: /var/log/opsfinder/backend/opsfinder.log
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   logback:
     rollingpolicy:
