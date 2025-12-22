@@ -64,13 +64,18 @@ server:
 # Actuator Configuration - Production
 management:
   endpoints:
+    enabled-by-default: true
     web:
       exposure:
         include: health
       base-path: /actuator
   endpoint:
     health:
+      enabled: true
       show-details: when-authorized
+  health:
+    defaults:
+      enabled: true
 
 # CORS - Restricted in production
 cors:
