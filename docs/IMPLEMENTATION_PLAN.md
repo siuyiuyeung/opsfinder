@@ -320,6 +320,13 @@ OpsFinder/
     - Updated `application-prod.yml` with file logging config (prod: 100MB/30days/3GB)
     - Verified volume mounts in both `docker-compose.yml` and `docker-compose.app.yml`
   - Impact: Logs to BOTH console (docker logs) AND files (./logs/backend/opsfinder.log), automatic rotation, persistent across restarts
+- ✅ **Added Timezone Configuration** - Set all containers to Asia/Shanghai (UTC+8) for consistent timestamps (2025-12-22)
+  - See: `docs/task/add-timezone-config.md`
+  - Purpose: Ensure consistent timestamps across database, backend, and frontend
+  - Implementation: Added TZ environment variable to all services in docker-compose files
+  - Configuration: `TZ: ${TZ:-Asia/Shanghai}` (default Asia/Shanghai, override via .env)
+  - Services Configured: PostgreSQL database, Spring Boot backend, Nginx frontend
+  - Impact: All logs, database timestamps, and application time operations use Shanghai timezone (UTC+8)
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)
