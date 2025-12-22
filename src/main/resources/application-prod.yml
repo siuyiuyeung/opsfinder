@@ -61,6 +61,17 @@ server:
     enabled: true
     mime-types: application/json,application/xml,text/html,text/xml,text/plain
 
+# Actuator Configuration - Production
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+
 # CORS - Restricted in production
 cors:
   allowed-origins: ${ALLOWED_ORIGINS:https://opsfinder.example.com}
