@@ -6,6 +6,8 @@ import com.igsl.opsfinder.dto.request.DeviceRequest;
 import com.igsl.opsfinder.dto.response.DeviceResponse;
 import com.igsl.opsfinder.service.CsvService;
 import com.igsl.opsfinder.service.DeviceService;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -272,13 +274,15 @@ public class DeviceController {
      * @param type optional type filter
      * @param response HTTP response for streaming CSV
      * @throws IOException if CSV generation fails
+     * @throws CsvDataTypeMismatchException if CSV data type mismatch occurs
+     * @throws CsvRequiredFieldEmptyException if required CSV field is empty
      */
     @GetMapping("/export")
     @PreAuthorize("isAuthenticated()")
     public void exportDevices(
             @RequestParam(required = false) String zone,
             @RequestParam(required = false) String type,
-            HttpServletResponse response) throws IOException {
+            HttpServletResponse response) throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
 
         log.info("Export devices request - zone: {}, type: {}", zone, type);
 

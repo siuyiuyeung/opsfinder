@@ -9,6 +9,8 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import com.opencsv.exceptions.CsvDataTypeMismatchException;
+import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -115,9 +117,11 @@ public class CsvService {
      * @param devices list of export DTOs
      * @param writer output writer
      * @throws IOException if writing fails
+     * @throws CsvDataTypeMismatchException if CSV data type mismatch occurs
+     * @throws CsvRequiredFieldEmptyException if required CSV field is empty
      */
     public void exportDevicesToCsv(List<DeviceExportDto> devices, Writer writer)
-            throws IOException {
+            throws IOException, CsvDataTypeMismatchException, CsvRequiredFieldEmptyException {
 
         log.info("Exporting {} devices to CSV", devices.size());
 
