@@ -1,5 +1,5 @@
 import api from './api'
-import type { Device, DeviceRequest, PageResponse } from '@/types/device'
+import type { Device, DeviceRequest, PageResponse, DeviceImportResult } from '@/types/device'
 
 /**
  * Device service for API calls.
@@ -103,6 +103,36 @@ export const deviceService = {
    */
   async countDevicesByType(type: string): Promise<number> {
     const response = await api.get<number>(`/devices/stats/type/${type}`)
+    return response.data
+  },
+
+  /**
+   * Import devices from CSV file.
+   */
+  async importDevices(file: File): Promise<DeviceImportResult> {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await api.post<DeviceImportResult>('/devices/import', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  },
+
+  /**
+   * Export devices to CSV file.
+   */
+  async exportDevices(zone?: string, type?: string): Promise<Blob> {
+    const params: { zone?: string; type?: string } = {}
+    if (zone) params.zone = zone
+    if (type) params.type = type
+
+    const response = await api.get('/devices/export', {
+      params,
+      responseType: 'blob',
+    })
     return response.data
   },
 }

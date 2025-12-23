@@ -48,3 +48,23 @@ export interface PageResponse<T> {
   last: boolean
   empty: boolean
 }
+
+/**
+ * Row result from CSV import operation.
+ */
+export interface RowResult {
+  rowNumber: number
+  success: boolean
+  errorMessage?: string
+  deviceData?: any
+}
+
+/**
+ * Result from CSV import operation.
+ */
+export interface DeviceImportResult {
+  totalRows: number
+  successCount: number
+  failureCount: number
+  results: RowResult[]
+}

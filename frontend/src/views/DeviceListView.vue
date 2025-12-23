@@ -6,15 +6,32 @@
           <v-card-title class="d-flex align-center flex-wrap pa-4">
             <v-icon color="info" size="large" class="mr-2">mdi-server</v-icon>
             <span style="word-break: break-word; flex: 1 1 auto; min-width: 0;">Devices</span>
-            <v-btn
-              v-if="authStore.isAdmin || authStore.isOperator"
-              color="primary"
-              prepend-icon="mdi-plus"
-              @click="showCreateDialog = true"
-              class="mt-2"
-            >
-              Add Device
-            </v-btn>
+            <div class="d-flex gap-2 flex-wrap mt-2">
+              <v-btn
+                color="success"
+                prepend-icon="mdi-download"
+                @click="handleExport"
+                :loading="exportLoading"
+              >
+                Export CSV
+              </v-btn>
+              <v-btn
+                v-if="authStore.isAdmin || authStore.isOperator"
+                color="info"
+                prepend-icon="mdi-upload"
+                @click="showImportDialog = true"
+              >
+                Import CSV
+              </v-btn>
+              <v-btn
+                v-if="authStore.isAdmin || authStore.isOperator"
+                color="primary"
+                prepend-icon="mdi-plus"
+                @click="showCreateDialog = true"
+              >
+                Add Device
+              </v-btn>
+            </div>
           </v-card-title>
 
           <v-card-text class="pa-4">
@@ -197,6 +214,117 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Import CSV Dialog -->
+    <v-dialog v-model="showImportDialog" max-width="600px" persistent>
+      <v-card>
+        <v-card-title>Import Devices from CSV</v-card-title>
+        <v-card-text>
+          <v-file-input
+            v-model="importFile"
+            label="Select CSV file"
+            accept=".csv"
+            prepend-icon="mdi-file-delimited"
+            show-size
+            :rules="[fileValidationRule]"
+            @update:model-value="importError = ''"
+          ></v-file-input>
+          <v-alert v-if="importError" type="error" class="mt-2">
+            {{ importError }}
+          </v-alert>
+          <v-alert type="info" class="mt-2">
+            <div class="text-body-2">
+              <strong>CSV Format:</strong> zone, username, type, remark, location, ip, hostname, hardwareModel, datacenter, accountType, passwordIndex
+            </div>
+            <div class="text-body-2 mt-1">
+              <strong>Required fields:</strong> zone, type
+            </div>
+            <div class="text-body-2 mt-1">
+              <strong>Max file size:</strong> 10MB
+            </div>
+          </v-alert>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn @click="closeImportDialog">Cancel</v-btn>
+          <v-btn
+            color="primary"
+            @click="handleImport"
+            :loading="importLoading"
+            :disabled="!importFile"
+          >
+            Upload
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Import Results Dialog -->
+    <v-dialog v-model="showImportResultsDialog" max-width="800px" persistent>
+      <v-card>
+        <v-card-title>Import Results</v-card-title>
+        <v-card-text>
+          <v-row class="mb-4">
+            <v-col cols="4">
+              <v-card color="info" variant="tonal">
+                <v-card-text class="text-center">
+                  <div class="text-h4">{{ importResults?.totalRows || 0 }}</div>
+                  <div class="text-body-2">Total Rows</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col cols="4">
+              <v-card color="success" variant="tonal">
+                <v-card-text class="text-center">
+                  <div class="text-h4">{{ importResults?.successCount || 0 }}</div>
+                  <div class="text-body-2">Success</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col cols="4">
+              <v-card color="error" variant="tonal">
+                <v-card-text class="text-center">
+                  <div class="text-h4">{{ importResults?.failureCount || 0 }}</div>
+                  <div class="text-body-2">Failed</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+
+          <v-data-table
+            :items="importResults?.results || []"
+            :items-per-page="10"
+            class="elevation-1"
+          >
+            <template v-slot:headers>
+              <tr>
+                <th>Row</th>
+                <th>Status</th>
+                <th>Message</th>
+              </tr>
+            </template>
+            <template v-slot:item="{ item }">
+              <tr>
+                <td>{{ item.rowNumber }}</td>
+                <td>
+                  <v-chip
+                    :color="item.success ? 'success' : 'error'"
+                    size="small"
+                  >
+                    {{ item.success ? 'Success' : 'Failed' }}
+                  </v-chip>
+                </td>
+                <td>{{ item.errorMessage || 'Imported successfully' }}</td>
+              </tr>
+            </template>
+          </v-data-table>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" @click="closeImportResultsDialog">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -205,7 +333,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDeviceStore } from '@/stores/device'
 import { useAuthStore } from '@/stores/auth'
-import type { Device, DeviceRequest } from '@/types/device'
+import { deviceService } from '@/services/device.service'
+import type { Device, DeviceRequest, DeviceImportResult } from '@/types/device'
 
 const router = useRouter()
 const deviceStore = useDeviceStore()
@@ -218,6 +347,8 @@ const page = ref(1)
 
 const showCreateDialog = ref(false)
 const showDeleteDialog = ref(false)
+const showImportDialog = ref(false)
+const showImportResultsDialog = ref(false)
 const editMode = ref(false)
 const formRef = ref()
 const formData = ref<DeviceRequest>({
@@ -236,8 +367,28 @@ const formData = ref<DeviceRequest>({
 const deviceToDelete = ref<Device | null>(null)
 const deviceToEdit = ref<Device | null>(null)
 
+// CSV Import/Export
+const importFile = ref<File[] | null>(null)
+const importLoading = ref(false)
+const exportLoading = ref(false)
+const importError = ref('')
+const importResults = ref<DeviceImportResult | null>(null)
+
 const rules = {
   required: (value: string) => !!value || 'This field is required',
+}
+
+const fileValidationRule = (files: File[] | null) => {
+  if (!files || files.length === 0) return true
+  const file = files[0]
+  const maxSize = 10 * 1024 * 1024 // 10MB
+  if (file.size > maxSize) {
+    return 'File size must be less than 10MB'
+  }
+  if (!file.name.toLowerCase().endsWith('.csv')) {
+    return 'File must be a CSV file'
+  }
+  return true
 }
 
 onMounted(async () => {
@@ -354,5 +505,79 @@ function closeDialog() {
     accountType: '',
     passwordIndex: '',
   }
+}
+
+// CSV Import/Export handlers
+async function handleImport() {
+  if (!importFile.value || importFile.value.length === 0) {
+    importError.value = 'Please select a file'
+    return
+  }
+
+  const file = importFile.value[0]
+  const validationResult = fileValidationRule(importFile.value)
+  if (validationResult !== true) {
+    importError.value = validationResult
+    return
+  }
+
+  try {
+    importLoading.value = true
+    importError.value = ''
+    const result = await deviceService.importDevices(file)
+    importResults.value = result
+    showImportDialog.value = false
+    showImportResultsDialog.value = true
+    // Refresh the device list
+    await handleFilterChange()
+  } catch (error: any) {
+    console.error('Import error:', error)
+    importError.value = error.response?.data?.message || 'Failed to import devices'
+  } finally {
+    importLoading.value = false
+  }
+}
+
+async function handleExport() {
+  try {
+    exportLoading.value = true
+    const blob = await deviceService.exportDevices(
+      selectedZone.value || undefined,
+      selectedType.value || undefined
+    )
+
+    // Create download link
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+
+    // Generate filename
+    let filename = 'devices'
+    if (selectedZone.value) filename += `_${selectedZone.value}`
+    if (selectedType.value) filename += `_${selectedType.value}`
+    filename += `_${new Date().toISOString().split('T')[0]}.csv`
+
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Export error:', error)
+    alert('Failed to export devices. Please try again.')
+  } finally {
+    exportLoading.value = false
+  }
+}
+
+function closeImportDialog() {
+  showImportDialog.value = false
+  importFile.value = null
+  importError.value = ''
+}
+
+function closeImportResultsDialog() {
+  showImportResultsDialog.value = false
+  importResults.value = null
 }
 </script>
