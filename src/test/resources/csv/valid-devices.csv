@@ -1,0 +1,4 @@
+zone,username,type,remark,location,ip,hostname,hardwareModel,datacenter,accountType,passwordIndex
+Production,admin,Server,Web Server,Rack A1,192.168.1.10,web-01,Dell R740,DC1,Service,PWD-001
+Production,dbadmin,Database,PostgreSQL,Rack A2,192.168.1.11,db-01,Dell R740,DC1,Admin,PWD-002
+Development,devuser,VM,Test Server,Cloud,10.0.0.5,dev-vm-01,Virtual,AWS,Service,PWD-003

@@ -1,0 +1,4 @@
+zone,username,type,remark,location,ip,hostname,hardwareModel,datacenter,accountType,passwordIndex
+,admin,Server,Missing zone,Rack A1,192.168.1.10,web-01,Dell R740,DC1,Service,PWD-001
+Production,admin,,Missing type,Rack A2,192.168.1.11,db-01,Dell R740,DC1,Admin,PWD-002
+Production,admin,Server,Invalid IP,Rack A3,999.999.999.999,test-01,Dell R740,DC1,Service,PWD-003

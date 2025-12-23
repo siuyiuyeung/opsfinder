@@ -1,5 +1,6 @@
 package com.igsl.opsfinder.service;
 
+import com.igsl.opsfinder.dto.csv.DeviceExportDto;
 import com.igsl.opsfinder.dto.request.DeviceRequest;
 import com.igsl.opsfinder.dto.response.DeviceResponse;
 import com.igsl.opsfinder.entity.Device;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service layer for device management with CRUD operations and full-text search.
@@ -137,6 +139,68 @@ public class DeviceService {
     public List<String> getDistinctDatacenters() {
         log.debug("Fetching distinct datacenters");
         return deviceRepository.findDistinctDatacenters();
+    }
+
+    /**
+     * Get all devices for export (no pagination, core fields only).
+     * Accessible by all authenticated users.
+     *
+     * @return list of device export DTOs
+     */
+    public List<DeviceExportDto> getAllDevicesForExport() {
+        log.info("Fetching all devices for CSV export");
+        List<Device> devices = deviceRepository.findAll();
+        return devices.stream()
+                .map(this::convertToExportDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get filtered devices for export.
+     *
+     * @param zone optional zone filter
+     * @param type optional type filter
+     * @return list of filtered device export DTOs
+     */
+    public List<DeviceExportDto> getDevicesForExport(String zone, String type) {
+        log.info("Fetching filtered devices for CSV export - zone: {}, type: {}", zone, type);
+
+        List<Device> devices;
+        if (zone != null && type != null) {
+            devices = deviceRepository.findByZoneAndType(zone, type);
+        } else if (zone != null) {
+            devices = deviceRepository.findByZone(zone);
+        } else if (type != null) {
+            devices = deviceRepository.findByType(type);
+        } else {
+            devices = deviceRepository.findAll();
+        }
+
+        return devices.stream()
+                .map(this::convertToExportDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Convert Device entity to DeviceExportDto.
+     *
+     * @param device the device entity
+     * @return device export DTO
+     */
+    private DeviceExportDto convertToExportDto(Device device) {
+        return DeviceExportDto.builder()
+                .zone(device.getZone())
+                .username(device.getUsername())
+                .type(device.getType())
+                .remark(device.getRemark())
+                .location(device.getLocation())
+                .ip(device.getIp())
+                .hostname(device.getHostname())
+                .hardwareModel(device.getHardwareModel())
+                .datacenter(device.getDatacenter())
+                .accountType(device.getAccountType())
+                .passwordIndex(device.getPasswordIndex())
+                .build();
     }
 
     /**

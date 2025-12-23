@@ -1,8 +1,12 @@
 package com.igsl.opsfinder.controller;
 
+import com.igsl.opsfinder.dto.csv.DeviceExportDto;
+import com.igsl.opsfinder.dto.csv.DeviceImportResult;
 import com.igsl.opsfinder.dto.request.DeviceRequest;
 import com.igsl.opsfinder.dto.response.DeviceResponse;
+import com.igsl.opsfinder.service.CsvService;
 import com.igsl.opsfinder.service.DeviceService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +18,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.List;
 
 /**
@@ -28,6 +35,7 @@ import java.util.List;
 public class DeviceController {
 
     private final DeviceService deviceService;
+    private final CsvService csvService;
 
     /**
      * Search devices by keyword using full-text search.
@@ -229,5 +237,88 @@ public class DeviceController {
         log.info("Count devices by type request - type: {}", type);
         long count = deviceService.countDevicesByType(type);
         return ResponseEntity.ok(count);
+    }
+
+    /**
+     * Import devices from CSV file.
+     * Accessible by ADMIN and OPERATOR roles only.
+     * Provides detailed row-by-row import results.
+     *
+     * @param file uploaded CSV file
+     * @return import result with success/failure details
+     */
+    @PostMapping("/import")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
+    public ResponseEntity<DeviceImportResult> importDevices(@RequestParam("file") MultipartFile file) {
+        log.info("Import devices request - filename: {}, size: {} bytes",
+                file.getOriginalFilename(), file.getSize());
+
+        DeviceImportResult result = csvService.importDevicesFromCsv(file);
+
+        // Return 207 Multi-Status if there are any failures, 200 if all succeeded
+        HttpStatus status = result.getFailureCount() > 0
+                ? HttpStatus.MULTI_STATUS
+                : HttpStatus.OK;
+
+        return ResponseEntity.status(status).body(result);
+    }
+
+    /**
+     * Export devices to CSV file.
+     * Accessible by all authenticated users.
+     * Supports optional filtering by zone and type.
+     *
+     * @param zone optional zone filter
+     * @param type optional type filter
+     * @param response HTTP response for streaming CSV
+     * @throws IOException if CSV generation fails
+     */
+    @GetMapping("/export")
+    @PreAuthorize("isAuthenticated()")
+    public void exportDevices(
+            @RequestParam(required = false) String zone,
+            @RequestParam(required = false) String type,
+            HttpServletResponse response) throws IOException {
+
+        log.info("Export devices request - zone: {}, type: {}", zone, type);
+
+        // Set response headers for CSV download
+        response.setContentType("text/csv");
+        response.setCharacterEncoding("UTF-8");
+
+        String filename = generateExportFilename(zone, type);
+        response.setHeader("Content-Disposition",
+                "attachment; filename=\"" + filename + "\"");
+
+        // Fetch devices and export to CSV
+        List<DeviceExportDto> devices = deviceService.getDevicesForExport(zone, type);
+
+        try (Writer writer = response.getWriter()) {
+            csvService.exportDevicesToCsv(devices, writer);
+        }
+
+        log.info("Exported {} devices to CSV", devices.size());
+    }
+
+    /**
+     * Generate filename for CSV export based on filters.
+     *
+     * @param zone optional zone filter
+     * @param type optional type filter
+     * @return generated filename
+     */
+    private String generateExportFilename(String zone, String type) {
+        StringBuilder filename = new StringBuilder("devices");
+
+        if (zone != null) {
+            filename.append("_").append(zone.replaceAll("[^a-zA-Z0-9]", "_"));
+        }
+        if (type != null) {
+            filename.append("_").append(type.replaceAll("[^a-zA-Z0-9]", "_"));
+        }
+
+        filename.append("_").append(java.time.LocalDate.now()).append(".csv");
+
+        return filename.toString();
     }
 }

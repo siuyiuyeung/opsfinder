@@ -65,6 +65,31 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     Page<Device> findByZoneAndType(String zone, String type, Pageable pageable);
 
     /**
+     * Find devices by zone (non-paginated, for export).
+     *
+     * @param zone the zone name
+     * @return list of devices in the specified zone
+     */
+    List<Device> findByZone(String zone);
+
+    /**
+     * Find devices by type (non-paginated, for export).
+     *
+     * @param type the device type
+     * @return list of devices of the specified type
+     */
+    List<Device> findByType(String type);
+
+    /**
+     * Find devices by zone and type (non-paginated, for export).
+     *
+     * @param zone the zone name
+     * @param type the device type
+     * @return list of devices matching both zone and type
+     */
+    List<Device> findByZoneAndType(String zone, String type);
+
+    /**
      * Find device by IP address (exact match).
      *
      * @param ip the IP address
