@@ -49,6 +49,10 @@ dependencies {
     // CSV Processing
     implementation 'com.opencsv:opencsv:5.9'
 
+    // Excel Processing (Apache POI)
+    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
+
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'

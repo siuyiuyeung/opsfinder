@@ -39,6 +39,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/excel-files',
+    name: 'ExcelFiles',
+    component: () => import('@/views/ExcelFileView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/incidents',
     name: 'Incidents',
     component: () => import('@/views/IncidentListView.vue'),

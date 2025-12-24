@@ -327,6 +327,16 @@ OpsFinder/
   - Configuration: `TZ: ${TZ:-Asia/Shanghai}` (default Asia/Shanghai, override via .env)
   - Services Configured: PostgreSQL database, Spring Boot backend, Nginx frontend
   - Impact: All logs, database timestamps, and application time operations use Shanghai timezone (UTC+8)
+- ✅ **Excel File Upload and Search Feature** - Complete Excel file management with multi-keyword search and role-based access (2025-12-24)
+  - See: `docs/task/excel-file-upload-search-feature.md`
+  - Features: Upload .xlsx files (10MB max, 100K cells max), multi-keyword AND search (up to 5 keywords), search results with file/sheet/column/row/value, file details with sheets and headers
+  - Backend: Apache POI 5.2.5 for parsing, 3-table schema (excel_files, excel_sheets, excel_cells), bulk insertion optimization (500 cells/batch), soft delete pattern
+  - Frontend: Vue 3 file upload UI with validation, search interface with comma-separated keywords, file filtering, pagination, role-based actions
+  - Access Control: ADMIN (full access), OPERATOR (upload/search/delete own), USER (search only)
+  - Database: Composite btree index on (excel_sheet_id, cell_value_lower) for fast case-insensitive search
+  - API Endpoints: 6 REST endpoints (upload, list, view, delete, search, stats) with role-based security
+  - Storage: UUID-based filenames in YYYY/MM directory structure (./data/excel-files)
+  - Impact: Enables searching across thousands of Excel cells with multi-keyword AND logic, supports different header structures per file, transactional integrity with rollback on failure
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)

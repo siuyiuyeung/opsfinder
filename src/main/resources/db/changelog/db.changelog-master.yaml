@@ -7,6 +7,8 @@ databaseChangeLog:
       file: db/changelog/changelog-003-tech-messages.yaml
   - include:
       file: db/changelog/changelog-004-add-audit-columns.yaml
+  - include:
+      file: db/changelog/changelog-005-excel-files.yaml
   # Future changesets will be added here
   # - include:
-  #     file: db/changelog/changelog-005-incidents.yaml
+  #     file: db/changelog/006-incidents.yaml

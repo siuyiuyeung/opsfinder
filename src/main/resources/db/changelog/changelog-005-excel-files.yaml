@@ -1,0 +1,311 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-excel-files-table
+      author: claude
+      changes:
+        - createTable:
+            tableName: excel_files
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: original_filename
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stored_filename
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_path
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_size
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: uploaded_by
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: uploaded_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sheet_count
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: row_count
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: cell_count
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: "ACTIVE"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: idx_excel_files_uploaded_by
+            tableName: excel_files
+            columns:
+              - column:
+                  name: uploaded_by
+
+        - createIndex:
+            indexName: idx_excel_files_status
+            tableName: excel_files
+            columns:
+              - column:
+                  name: status
+
+        - createIndex:
+            indexName: idx_excel_files_original_filename
+            tableName: excel_files
+            columns:
+              - column:
+                  name: original_filename
+
+      rollback:
+        - dropTable:
+            tableName: excel_files
+
+  - changeSet:
+      id: 005-create-excel-sheets-table
+      author: claude
+      changes:
+        - createTable:
+            tableName: excel_sheets
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: excel_file_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sheet_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sheet_index
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: row_count
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: column_count
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: headers
+                  type: TEXT
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseColumnNames: excel_file_id
+            baseTableName: excel_sheets
+            constraintName: fk_excel_sheets_file
+            referencedColumnNames: id
+            referencedTableName: excel_files
+            onDelete: CASCADE
+            onUpdate: CASCADE
+
+        - createIndex:
+            indexName: idx_excel_sheets_file_id
+            tableName: excel_sheets
+            columns:
+              - column:
+                  name: excel_file_id
+
+        - createIndex:
+            indexName: idx_excel_sheets_sheet_name
+            tableName: excel_sheets
+            columns:
+              - column:
+                  name: sheet_name
+
+      rollback:
+        - dropTable:
+            tableName: excel_sheets
+
+  - changeSet:
+      id: 005-create-excel-cells-table
+      author: claude
+      changes:
+        - createTable:
+            tableName: excel_cells
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: excel_sheet_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: row_number
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: column_index
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: column_header
+                  type: VARCHAR(255)
+              - column:
+                  name: cell_value
+                  type: TEXT
+              - column:
+                  name: cell_value_lower
+                  type: TEXT
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_by
+                  type: VARCHAR(100)
+                  defaultValue: 'system'
+                  constraints:
+                    nullable: false
+
+        - addForeignKeyConstraint:
+            baseColumnNames: excel_sheet_id
+            baseTableName: excel_cells
+            constraintName: fk_excel_cells_sheet
+            referencedColumnNames: id
+            referencedTableName: excel_sheets
+            onDelete: CASCADE
+            onUpdate: CASCADE
+
+        - createIndex:
+            indexName: idx_excel_cells_sheet_id
+            tableName: excel_cells
+            columns:
+              - column:
+                  name: excel_sheet_id
+
+        - createIndex:
+            indexName: idx_excel_cells_value_lower
+            tableName: excel_cells
+            columns:
+              - column:
+                  name: cell_value_lower
+
+        - createIndex:
+            indexName: idx_excel_cells_column_header
+            tableName: excel_cells
+            columns:
+              - column:
+                  name: column_header
+
+        # Composite index for optimized search queries
+        - sql:
+            sql: CREATE INDEX idx_excel_cells_sheet_value ON excel_cells(excel_sheet_id, cell_value_lower);
+
+      rollback:
+        - dropTable:
+            tableName: excel_cells

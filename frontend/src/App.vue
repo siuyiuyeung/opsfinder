@@ -16,6 +16,7 @@ const baseNavigationItems = [
   { title: 'Dashboard', icon: 'mdi-view-dashboard', to: '/' },
   { title: 'Devices', icon: 'mdi-server', to: '/devices' },
   { title: 'Tech Messages', icon: 'mdi-alert-circle', to: '/tech-messages' },
+  { title: 'Excel Files', icon: 'mdi-file-excel', to: '/excel-files' },
   { title: 'Incidents', icon: 'mdi-file-document-alert', to: '/incidents' },
 ]
 
