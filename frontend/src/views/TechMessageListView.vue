@@ -107,11 +107,11 @@
                     <!-- Admin Actions -->
                     <div v-if="authStore.isAdmin" class="mt-4 text-left">
                       <v-btn size="small" @click="editTechMessage(techMessage)" class="mr-2">
-                        <v-icon start class="text-primary">mdi-pencil</v-icon>
+                        <v-icon start class="text-white">mdi-pencil</v-icon>
                         Edit
                       </v-btn>
                       <v-btn size="small" color="error" @click="confirmDelete(techMessage)">
-                        <v-icon start class="text-white">mdi-delete</v-icon>
+                        <v-icon start class="text-wh ite">mdi-delete</v-icon>
                         Delete
                       </v-btn>
                     </div>
