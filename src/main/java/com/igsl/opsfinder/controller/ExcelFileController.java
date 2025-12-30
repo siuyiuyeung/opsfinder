@@ -115,7 +115,8 @@ public class ExcelFileController {
     }
 
     /**
-     * Search Excel data with multi-keyword AND logic.
+     * Search Excel data with multi-keyword AND logic at row level.
+     * For multiple keywords, all must appear somewhere in the same row (across different cells).
      * Supports filtering by file ID and/or sheet name.
      * Accessible by all authenticated users.
      *

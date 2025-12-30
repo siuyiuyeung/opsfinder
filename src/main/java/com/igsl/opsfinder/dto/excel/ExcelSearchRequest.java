@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 
 /**
  * Request DTO for Excel cell search operations.
- * Supports multi-keyword AND logic with optional file/sheet filtering.
+ * Supports multi-keyword AND logic at row level with optional file/sheet filtering.
+ * For multiple keywords, all must appear somewhere in the same row (across different cells).
  */
 @Data
 @Builder
@@ -18,8 +19,8 @@ public class ExcelSearchRequest {
 
     /**
      * Comma-separated keywords for search.
-     * All keywords must match (AND logic).
-     * Example: "apple,fruit,red" will find cells containing all three words.
+     * All keywords must appear in the same row (AND logic at row level).
+     * Example: "apple,fruit,red" will find rows where all three words appear across different cells.
      */
     @NotBlank(message = "Keywords are required for search")
     private String keywords;

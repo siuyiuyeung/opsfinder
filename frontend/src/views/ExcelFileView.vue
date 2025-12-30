@@ -259,13 +259,13 @@ onMounted(() => {
               <v-col cols="12" md="4">
                 <v-text-field
                   v-model="searchKeywords"
-                  label="Search keywords (comma-separated for AND logic)"
+                  label="Search keywords (comma-separated for row-level AND)"
                   prepend-inner-icon="mdi-magnify"
                   placeholder="e.g., apple,fruit,red"
                   clearable
                   @click:clear="clearSearch"
                   @keyup.enter="handleSearch"
-                  hint="Enter multiple keywords separated by commas"
+                  hint="All keywords must appear in the same row (across different cells)"
                   persistent-hint
                 ></v-text-field>
               </v-col>

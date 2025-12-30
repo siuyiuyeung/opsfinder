@@ -12,9 +12,10 @@ import java.util.List;
 /**
  * Repository interface for ExcelCell entity.
  * Provides data access methods for Excel cell search operations.
+ * Extends custom repository for dynamic multi-keyword search.
  */
 @Repository
-public interface ExcelCellRepository extends JpaRepository<ExcelCell, Long> {
+public interface ExcelCellRepository extends JpaRepository<ExcelCell, Long>, ExcelCellRepositoryCustom {
 
     /**
      * Count cells in a specific Excel sheet.
@@ -36,8 +37,9 @@ public interface ExcelCellRepository extends JpaRepository<ExcelCell, Long> {
     long countAllActive();
 
     /**
-     * Search Excel cells with multi-keyword AND logic.
-     * All keywords must match (case-insensitive partial matching).
+     * Search Excel cells with multi-keyword AND logic at row level.
+     * All keywords must appear somewhere in the same row (across different cells).
+     * Returns cells that match at least one keyword, but only from rows where ALL keywords appear.
      * Supports filtering by file ID and/or sheet name.
      * Uses native SQL with explicit type casting to avoid PostgreSQL type inference issues.
      *
@@ -49,7 +51,7 @@ public interface ExcelCellRepository extends JpaRepository<ExcelCell, Long> {
      * @param keyword4 fourth keyword (optional)
      * @param keyword5 fifth keyword (optional)
      * @param pageable pagination parameters
-     * @return page of matching cells
+     * @return page of matching cells from rows where all keywords appear
      */
     @Query(value = "SELECT ec.* FROM excel_cells ec " +
            "JOIN excel_sheets es ON ec.excel_sheet_id = es.id " +
@@ -57,11 +59,32 @@ public interface ExcelCellRepository extends JpaRepository<ExcelCell, Long> {
            "WHERE ef.status = 'ACTIVE' " +
            "AND (:fileId IS NULL OR ef.id = :fileId) " +
            "AND (:sheetName IS NULL OR LOWER(es.sheet_name) = LOWER(CAST(:sheetName AS TEXT))) " +
-           "AND (:keyword1 IS NULL OR LOWER(ec.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword1 AS TEXT), '%'))) " +
-           "AND (:keyword2 IS NULL OR LOWER(ec.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword2 AS TEXT), '%'))) " +
-           "AND (:keyword3 IS NULL OR LOWER(ec.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword3 AS TEXT), '%'))) " +
-           "AND (:keyword4 IS NULL OR LOWER(ec.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword4 AS TEXT), '%'))) " +
-           "AND (:keyword5 IS NULL OR LOWER(ec.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword5 AS TEXT), '%')))",
+           // Cell must contain at least one keyword
+           "AND (" +
+           "    (:keyword1 IS NOT NULL AND LOWER(ec.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword1 AS TEXT), '%'))) " +
+           "    OR (:keyword2 IS NOT NULL AND LOWER(ec.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword2 AS TEXT), '%'))) " +
+           "    OR (:keyword3 IS NOT NULL AND LOWER(ec.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword3 AS TEXT), '%'))) " +
+           "    OR (:keyword4 IS NOT NULL AND LOWER(ec.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword4 AS TEXT), '%'))) " +
+           "    OR (:keyword5 IS NOT NULL AND LOWER(ec.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword5 AS TEXT), '%'))) " +
+           ") " +
+           // Cell must be in a row where ALL keywords appear
+           "AND (ec.excel_sheet_id, ec.row_number) IN (" +
+           "    SELECT sub.excel_sheet_id, sub.row_number " +
+           "    FROM excel_cells sub " +
+           "    JOIN excel_sheets sub_es ON sub.excel_sheet_id = sub_es.id " +
+           "    JOIN excel_files sub_ef ON sub_es.excel_file_id = sub_ef.id " +
+           "    WHERE sub_ef.status = 'ACTIVE' " +
+           "    AND (:fileId IS NULL OR sub_ef.id = :fileId) " +
+           "    AND (:sheetName IS NULL OR LOWER(sub_es.sheet_name) = LOWER(CAST(:sheetName AS TEXT))) " +
+           "    GROUP BY sub.excel_sheet_id, sub.row_number " +
+           "    HAVING " +
+           "        (:keyword1 IS NULL OR SUM(CASE WHEN LOWER(sub.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword1 AS TEXT), '%')) THEN 1 ELSE 0 END) > 0) " +
+           "        AND (:keyword2 IS NULL OR SUM(CASE WHEN LOWER(sub.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword2 AS TEXT), '%')) THEN 1 ELSE 0 END) > 0) " +
+           "        AND (:keyword3 IS NULL OR SUM(CASE WHEN LOWER(sub.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword3 AS TEXT), '%')) THEN 1 ELSE 0 END) > 0) " +
+           "        AND (:keyword4 IS NULL OR SUM(CASE WHEN LOWER(sub.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword4 AS TEXT), '%')) THEN 1 ELSE 0 END) > 0) " +
+           "        AND (:keyword5 IS NULL OR SUM(CASE WHEN LOWER(sub.cell_value_lower) LIKE LOWER(CONCAT('%', CAST(:keyword5 AS TEXT), '%')) THEN 1 ELSE 0 END) > 0) " +
+           ") " +
+           "ORDER BY ec.excel_sheet_id, ec.row_number, ec.column_index",
            nativeQuery = true)
     Page<ExcelCell> searchWithMultipleKeywords(
             Long fileId,

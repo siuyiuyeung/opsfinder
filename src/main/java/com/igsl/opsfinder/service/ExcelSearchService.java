@@ -16,21 +16,24 @@ import java.util.List;
 
 /**
  * Service for searching Excel cell data.
- * Supports multi-keyword AND logic with file/sheet filtering.
+ * Supports multi-keyword AND logic at row level with file/sheet filtering.
+ * For multi-keyword searches, all keywords must appear somewhere in the same row (across different cells).
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ExcelSearchService {
 
-    private static final int MAX_KEYWORDS = 5;
+    private static final int MAX_KEYWORDS = 10; // Increased from 5 with dynamic keyword support
     private static final int MAX_KEYWORD_LENGTH = 200;
 
     private final ExcelCellRepository excelCellRepository;
 
     /**
-     * Search Excel data with multi-keyword AND logic.
-     * All keywords must match (case-insensitive partial matching).
+     * Search Excel data with multi-keyword AND logic at row level.
+     * For single keyword: returns all cells containing that keyword.
+     * For multiple keywords: returns cells from rows where ALL keywords appear somewhere in the row.
+     * All matching is case-insensitive and supports partial matches.
      * Results can be filtered by file ID and/or sheet name.
      *
      * @param request the search request with keywords and optional filters
@@ -56,30 +59,13 @@ public class ExcelSearchService {
                     String.format("Too many keywords: %d (max: %d)", keywords.size(), MAX_KEYWORDS));
         }
 
-        // Execute search based on keyword count
-        Page<ExcelCell> results;
-
-        if (keywords.size() == 1) {
-            // Use optimized single-keyword search
-            results = excelCellRepository.searchWithSingleKeyword(
-                    request.getFileId(),
-                    request.getSheetName(),
-                    keywords.get(0),
-                    pageable
-            );
-        } else {
-            // Use multi-keyword AND search
-            results = excelCellRepository.searchWithMultipleKeywords(
-                    request.getFileId(),
-                    request.getSheetName(),
-                    keywords.size() > 0 ? keywords.get(0) : null,
-                    keywords.size() > 1 ? keywords.get(1) : null,
-                    keywords.size() > 2 ? keywords.get(2) : null,
-                    keywords.size() > 3 ? keywords.get(3) : null,
-                    keywords.size() > 4 ? keywords.get(4) : null,
-                    pageable
-            );
-        }
+        // Execute search with dynamic keyword count
+        Page<ExcelCell> results = excelCellRepository.searchWithDynamicKeywords(
+                request.getFileId(),
+                request.getSheetName(),
+                keywords,
+                pageable
+        );
 
         log.info("Search completed - found {} results out of {} total",
                 results.getNumberOfElements(), results.getTotalElements());

@@ -337,6 +337,17 @@ OpsFinder/
   - API Endpoints: 6 REST endpoints (upload, list, view, delete, search, stats) with role-based security
   - Storage: UUID-based filenames in YYYY/MM directory structure (./data/excel-files)
   - Impact: Enables searching across thousands of Excel cells with multi-keyword AND logic, supports different header structures per file, transactional integrity with rollback on failure
+- ✅ **Excel Row-Level Search with Dynamic Keywords** - Enhanced Excel search to support row-level keyword matching with dynamic keyword count (2025-12-30)
+  - See: `docs/task/fix-excel-comma-separated-keywords.md`
+  - Problem: Previous implementation only found keywords within the same cell, limiting usefulness for structured spreadsheet data
+  - Solution: Implemented row-level search where all keywords must appear somewhere in the same row (across different cells)
+  - Implementation: Custom repository with dynamic SQL generation (ExcelCellRepositoryCustom + ExcelCellRepositoryCustomImpl)
+  - Keyword Support: Increased from fixed 5 keywords to dynamic 1-10 keywords without code changes
+  - Query Logic: First filter by cells containing any keyword (OR), then filter by rows containing all keywords (AND with subquery GROUP BY/HAVING)
+  - Code Quality: Eliminated keyword1, keyword2, keyword3... parameters; single clean method call
+  - UI Updates: Updated hints to clarify "row-level AND" behavior for users
+  - Performance: Optimized single-keyword path, indexed searches, pagination support
+  - Impact: Search now works intuitively for spreadsheet data (e.g., "apple,fruit,red" finds rows with all three words across different columns)
 
 ### What's Stubbed
 - ⏳ Incident tracking views (placeholder "Coming Soon" messages)
