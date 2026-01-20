@@ -1,5 +1,5 @@
 import api from './api'
-import type { ExcelFile, ExcelFileDetail, ExcelSearchResult, ExcelStats, PageResponse } from '@/types/excel'
+import type { ExcelFile, ExcelFileDetail, ExcelRowSearchResult, ExcelStats, PageResponse } from '@/types/excel'
 
 /**
  * Excel file service for API calls.
@@ -51,19 +51,17 @@ export const excelService = {
   },
 
   /**
-   * Search Excel data with multi-keyword AND logic.
+   * Search Excel data with multi-keyword AND logic (row-grouped results).
    */
   async searchExcelData(
     keywords: string,
     filters?: { fileId?: number; sheetName?: string },
     page: number = 0,
     size: number = 20
-  ): Promise<PageResponse<ExcelSearchResult>> {
-    const response = await api.get<PageResponse<ExcelSearchResult>>('/excel-files/search', {
+  ): Promise<PageResponse<ExcelRowSearchResult>> {
+    const response = await api.get<PageResponse<ExcelRowSearchResult>>('/excel-files/search', {
       params: { keywords, ...filters, page, size }
     })
-    console.log('API Response:', response.data)
-    console.log('First result from API:', response.data.content[0])
     return response.data
   },
 

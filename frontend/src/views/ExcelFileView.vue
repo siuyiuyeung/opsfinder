@@ -2,7 +2,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { excelService } from '@/services/excel.service'
 import { useAuthStore } from '@/stores/auth'
-import type { ExcelFile, ExcelSearchResult, ExcelFileDetail } from '@/types/excel'
+import type { ExcelFile, ExcelRowSearchResult, ExcelFileDetail } from '@/types/excel'
 
 const authStore = useAuthStore()
 
@@ -11,7 +11,7 @@ const loading = ref(false)
 const searchLoading = ref(false)
 const uploadLoading = ref(false)
 const files = ref<ExcelFile[]>([])
-const searchResults = ref<ExcelSearchResult[]>([])
+const searchResults = ref<ExcelRowSearchResult[]>([])
 const currentPage = ref(0)
 const totalPages = ref(0)
 const totalElements = ref(0)
@@ -58,9 +58,8 @@ const headers = [
 const searchResultHeaders = [
   { title: 'File', key: 'fileName', sortable: false },
   { title: 'Sheet', key: 'sheetName', sortable: false },
-  { title: 'Column', key: 'columnHeader', sortable: false },
   { title: 'Row', key: 'rowNumber', sortable: false },
-  { title: 'Value', key: 'cellValue', sortable: false },
+  { title: 'Matched Values', key: 'matchedValues', sortable: false },
 ]
 
 // Methods
@@ -202,6 +201,10 @@ const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleString()
 }
 
+const getRowKey = (item: ExcelRowSearchResult): string => {
+  return `${item.sheetId}_${item.rowNumber}`
+}
+
 const handlePageChange = (page: number) => {
   currentPage.value = page - 1
   loadFiles()
@@ -314,12 +317,28 @@ onMounted(() => {
                   density="compact"
                   show-expand
                   v-model:expanded="expandedRows"
-                  item-value="cellId"
+                  :item-value="getRowKey"
                 >
-                  <template v-slot:item.cellValue="{ item }">
-                    <span class="text-truncate" style="max-width: 300px; display: inline-block;">
-                      {{ item.cellValue }}
-                    </span>
+                  <template v-slot:item.matchedValues="{ item }">
+                    <div class="d-flex flex-wrap gap-1">
+                      <v-chip
+                        v-for="(value, index) in item.matchedValues.slice(0, 3)"
+                        :key="index"
+                        size="small"
+                        color="primary"
+                        variant="tonal"
+                      >
+                        {{ value.length > 30 ? value.substring(0, 30) + '...' : value }}
+                      </v-chip>
+                      <v-chip
+                        v-if="item.matchedValues.length > 3"
+                        size="small"
+                        color="grey"
+                        variant="tonal"
+                      >
+                        +{{ item.matchedValues.length - 3 }} more
+                      </v-chip>
+                    </div>
                   </template>
 
                   <template v-slot:expanded-row="{ columns, item }">
@@ -352,14 +371,14 @@ onMounted(() => {
                               </tbody>
                             </v-table>
                             <v-alert
-                              v-if="item.rowData.some(c => c.isMatchedCell)"
+                              v-if="item.rowData.filter(c => c.isMatchedCell).length > 0"
                               type="info"
                               variant="tonal"
                               density="compact"
                               class="mt-2"
                             >
                               <v-icon icon="mdi-information" size="small" class="mr-2"></v-icon>
-                              Highlighted row indicates the matched cell
+                              {{ item.rowData.filter(c => c.isMatchedCell).length }} matched cell(s) highlighted in yellow
                             </v-alert>
                           </v-card-text>
                         </v-card>

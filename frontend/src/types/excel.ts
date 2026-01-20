@@ -47,6 +47,20 @@ export interface ExcelSearchResult {
   rowData: RowCellData[]
 }
 
+/**
+ * Row-grouped search result - one entry per row with multiple matched cells
+ */
+export interface ExcelRowSearchResult {
+  fileId: number
+  fileName: string
+  sheetId: number
+  sheetName: string
+  rowNumber: number
+  matchedValues: string[]
+  matchedColumnIndices: number[]
+  rowData: RowCellData[]
+}
+
 export interface ExcelStats {
   totalFiles: number
   activeFiles: number

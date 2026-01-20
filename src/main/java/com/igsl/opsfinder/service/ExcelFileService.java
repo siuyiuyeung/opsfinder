@@ -22,8 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -174,51 +173,90 @@ public class ExcelFileService {
     }
 
     /**
-     * Search Excel data with multi-keyword AND logic.
+     * Search Excel data with multi-keyword AND logic, grouped by row.
+     * Returns one result per row, with all matched cells highlighted.
      *
      * @param request search request with keywords and filters
      * @param pageable pagination parameters
-     * @return page of search results with full row context
+     * @return page of row-grouped search results
      */
     @Transactional(readOnly = true)
-    public Page<ExcelSearchResultResponse> searchExcelData(ExcelSearchRequest request, Pageable pageable) {
-        log.debug("Searching Excel data: {}", request);
+    public Page<ExcelRowSearchResult> searchExcelData(ExcelSearchRequest request, Pageable pageable) {
+        log.debug("Searching Excel data (row-grouped): {}", request);
 
+        // Fetch matched cells - use a larger page size to get more cells for grouping
         Page<ExcelCell> cells = excelSearchService.searchExcelData(request, pageable);
 
-        return cells.map(cell -> {
-            // Eagerly initialize the lazy-loaded relationships within transaction
+        // Group cells by row key: sheetId_rowNumber
+        Map<String, List<ExcelCell>> rowGroups = new LinkedHashMap<>();
+
+        for (ExcelCell cell : cells.getContent()) {
+            // Initialize lazy-loaded relationships
             ExcelSheet sheet = cell.getExcelSheet();
-            sheet.getSheetName(); // Force initialization
-            sheet.getExcelFile().getOriginalFilename(); // Force initialization
+            sheet.getSheetName();
+            sheet.getExcelFile().getOriginalFilename();
+
+            String rowKey = sheet.getId() + "_" + cell.getRowNumber();
+            rowGroups.computeIfAbsent(rowKey, k -> new ArrayList<>()).add(cell);
+        }
+
+        log.debug("Grouped {} cells into {} rows", cells.getContent().size(), rowGroups.size());
+
+        // Convert each row group to ExcelRowSearchResult
+        List<ExcelRowSearchResult> rowResults = new ArrayList<>();
+
+        for (Map.Entry<String, List<ExcelCell>> entry : rowGroups.entrySet()) {
+            List<ExcelCell> matchedCells = entry.getValue();
+            ExcelCell firstCell = matchedCells.get(0);
+            ExcelSheet sheet = firstCell.getExcelSheet();
 
             Long sheetId = sheet.getId();
-            Integer rowNumber = cell.getRowNumber();
-            Long cellId = cell.getId();
+            Integer rowNumber = firstCell.getRowNumber();
 
-            log.debug("Fetching row data for sheetId: {}, rowNumber: {}", sheetId, rowNumber);
+            // Collect matched values and column indices
+            List<String> matchedValues = matchedCells.stream()
+                    .map(ExcelCell::getCellValue)
+                    .toList();
+            List<Integer> matchedColumnIndices = matchedCells.stream()
+                    .map(ExcelCell::getColumnIndex)
+                    .toList();
+            Set<Long> matchedCellIds = matchedCells.stream()
+                    .map(ExcelCell::getId)
+                    .collect(Collectors.toSet());
 
-            ExcelSearchResultResponse response = excelFileMapper.toSearchResultResponse(cell);
-
-            // Fetch all cells in the matched row for full context
+            // Fetch all cells in the row for full context
             List<ExcelCell> rowCells = excelCellRepository.findBySheetIdAndRowNumber(sheetId, rowNumber);
 
-            log.debug("Found {} cells in row {}", rowCells.size(), rowNumber);
-
-            // Convert to RowCellData DTOs
-            List<com.igsl.opsfinder.dto.excel.RowCellData> rowData = rowCells.stream()
-                    .map(rowCell -> com.igsl.opsfinder.dto.excel.RowCellData.builder()
+            // Convert to RowCellData DTOs, marking all matched cells
+            List<RowCellData> rowData = rowCells.stream()
+                    .map(rowCell -> RowCellData.builder()
                             .columnHeader(rowCell.getColumnHeader())
                             .columnIndex(rowCell.getColumnIndex())
                             .cellValue(rowCell.getCellValue())
-                            .isMatchedCell(rowCell.getId().equals(cellId))
+                            .isMatchedCell(matchedCellIds.contains(rowCell.getId()))
                             .build())
                     .toList();
 
-            response.setRowData(rowData);
-            log.debug("Set {} row cells for response", rowData.size());
-            return response;
-        });
+            ExcelRowSearchResult result = ExcelRowSearchResult.builder()
+                    .fileId(sheet.getExcelFile().getId())
+                    .fileName(sheet.getExcelFile().getOriginalFilename())
+                    .sheetId(sheetId)
+                    .sheetName(sheet.getSheetName())
+                    .rowNumber(rowNumber)
+                    .matchedValues(matchedValues)
+                    .matchedColumnIndices(matchedColumnIndices)
+                    .rowData(rowData)
+                    .build();
+
+            rowResults.add(result);
+        }
+
+        // Return as a page - note: total count is approximate (based on cells, not rows)
+        return new org.springframework.data.domain.PageImpl<>(
+                rowResults,
+                pageable,
+                cells.getTotalElements()
+        );
     }
 
     /**

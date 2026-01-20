@@ -117,6 +117,7 @@ public class ExcelFileController {
     /**
      * Search Excel data with multi-keyword AND logic at row level.
      * For multiple keywords, all must appear somewhere in the same row (across different cells).
+     * Returns one result per row with all matched cells highlighted.
      * Supports filtering by file ID and/or sheet name.
      * Accessible by all authenticated users.
      *
@@ -125,11 +126,11 @@ public class ExcelFileController {
      * @param sheetName optional sheet name filter
      * @param page page number (0-indexed)
      * @param size page size
-     * @return page of search results
+     * @return page of row-grouped search results
      */
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Page<ExcelSearchResultResponse>> searchExcelData(
+    public ResponseEntity<Page<ExcelRowSearchResult>> searchExcelData(
             @RequestParam String keywords,
             @RequestParam(required = false) Long fileId,
             @RequestParam(required = false) String sheetName,
@@ -147,7 +148,7 @@ public class ExcelFileController {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<ExcelSearchResultResponse> results = excelFileService.searchExcelData(request, pageable);
+        Page<ExcelRowSearchResult> results = excelFileService.searchExcelData(request, pageable);
 
         return ResponseEntity.ok(results);
     }
