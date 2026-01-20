@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * Request DTO for Excel cell search operations.
  * Supports multi-keyword AND logic at row level with optional file/sheet filtering.
@@ -26,12 +28,14 @@ public class ExcelSearchRequest {
     private String keywords;
 
     /**
-     * Optional: Filter results to a specific Excel file ID.
+     * Optional: Filter results to specific Excel file IDs.
+     * When multiple files are selected, results from all selected files are returned.
      */
-    private Long fileId;
+    private List<Long> fileIds;
 
     /**
-     * Optional: Filter results to a specific sheet name (case-insensitive).
+     * Optional: Filter results to specific sheet names (case-insensitive).
+     * When multiple sheets are selected, results from all selected sheets are returned.
      */
-    private String sheetName;
+    private List<String> sheetNames;
 }

@@ -52,15 +52,24 @@ export const excelService = {
 
   /**
    * Search Excel data with multi-keyword AND logic (row-grouped results).
+   * Supports filtering by multiple file IDs and/or sheet names.
    */
   async searchExcelData(
     keywords: string,
-    filters?: { fileId?: number; sheetName?: string },
+    filters?: { fileIds?: number[]; sheetNames?: string[] },
     page: number = 0,
     size: number = 20
   ): Promise<PageResponse<ExcelRowSearchResult>> {
+    // Build params object, converting arrays to comma-separated strings for query params
+    const params: Record<string, any> = { keywords, page, size }
+    if (filters?.fileIds && filters.fileIds.length > 0) {
+      params.fileIds = filters.fileIds.join(',')
+    }
+    if (filters?.sheetNames && filters.sheetNames.length > 0) {
+      params.sheetNames = filters.sheetNames.join(',')
+    }
     const response = await api.get<PageResponse<ExcelRowSearchResult>>('/excel-files/search', {
-      params: { keywords, ...filters, page, size }
+      params
     })
     return response.data
   },

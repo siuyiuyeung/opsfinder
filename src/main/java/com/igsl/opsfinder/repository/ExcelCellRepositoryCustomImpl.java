@@ -24,8 +24,8 @@ public class ExcelCellRepositoryCustomImpl implements ExcelCellRepositoryCustom 
 
     @Override
     public Page<ExcelCell> searchWithDynamicKeywords(
-            Long fileId,
-            String sheetName,
+            List<Long> fileIds,
+            List<String> sheetNames,
             List<String> keywords,
             Pageable pageable) {
 
@@ -33,17 +33,21 @@ public class ExcelCellRepositoryCustomImpl implements ExcelCellRepositoryCustom 
             return Page.empty(pageable);
         }
 
+        // Normalize empty lists to null for cleaner conditional logic
+        List<Long> normalizedFileIds = (fileIds != null && !fileIds.isEmpty()) ? fileIds : null;
+        List<String> normalizedSheetNames = (sheetNames != null && !sheetNames.isEmpty()) ? sheetNames : null;
+
         // Build the SQL query dynamically (conditionally includes filters based on NULL checks)
-        String sql = buildSearchQuery(keywords, fileId, sheetName);
-        String countSql = buildCountQuery(keywords, fileId, sheetName);
+        String sql = buildSearchQuery(keywords, normalizedFileIds, normalizedSheetNames);
+        String countSql = buildCountQuery(keywords, normalizedFileIds, normalizedSheetNames);
 
         // Create and configure the query using Hibernate NativeQuery for better type handling
         NativeQuery<ExcelCell> query = (NativeQuery<ExcelCell>) entityManager.createNativeQuery(sql, ExcelCell.class);
         NativeQuery<Long> countQuery = (NativeQuery<Long>) entityManager.createNativeQuery(countSql);
 
         // Set parameters - only set non-null parameters since SQL is built conditionally
-        setQueryParameters(query, fileId, sheetName, keywords);
-        setQueryParameters(countQuery, fileId, sheetName, keywords);
+        setQueryParameters(query, normalizedFileIds, normalizedSheetNames, keywords);
+        setQueryParameters(countQuery, normalizedFileIds, normalizedSheetNames, keywords);
 
         // Execute count query
         long total = countQuery.getSingleResult();
@@ -61,7 +65,7 @@ public class ExcelCellRepositoryCustomImpl implements ExcelCellRepositoryCustom 
      * Build the main search query with dynamic keyword count.
      * Handles NULL parameters by conditional SQL building instead of SQL-level NULL checks.
      */
-    private String buildSearchQuery(List<String> keywords, Long fileId, String sheetName) {
+    private String buildSearchQuery(List<String> keywords, List<Long> fileIds, List<String> sheetNames) {
         StringBuilder sql = new StringBuilder();
 
         sql.append("SELECT ec.* FROM excel_cells ec ");
@@ -69,14 +73,14 @@ public class ExcelCellRepositoryCustomImpl implements ExcelCellRepositoryCustom 
         sql.append("JOIN excel_files ef ON es.excel_file_id = ef.id ");
         sql.append("WHERE ef.status = 'ACTIVE' ");
 
-        // Only add fileId filter if provided
-        if (fileId != null) {
-            sql.append("AND ef.id = :fileId ");
+        // Only add fileIds filter if provided (use IN clause for multiple values)
+        if (fileIds != null) {
+            sql.append("AND ef.id IN (:fileIds) ");
         }
 
-        // Only add sheetName filter if provided
-        if (sheetName != null) {
-            sql.append("AND LOWER(es.sheet_name) = LOWER(CAST(:sheetName AS TEXT)) ");
+        // Only add sheetNames filter if provided (use IN clause for multiple values, case-insensitive)
+        if (sheetNames != null) {
+            sql.append("AND LOWER(es.sheet_name) IN (:sheetNamesLower) ");
         }
 
         // Cell must contain at least one keyword
@@ -102,12 +106,12 @@ public class ExcelCellRepositoryCustomImpl implements ExcelCellRepositoryCustom 
             sql.append("    JOIN excel_files sub_ef ON sub_es.excel_file_id = sub_ef.id ");
             sql.append("    WHERE sub_ef.status = 'ACTIVE' ");
 
-            if (fileId != null) {
-                sql.append("    AND sub_ef.id = :fileId ");
+            if (fileIds != null) {
+                sql.append("    AND sub_ef.id IN (:fileIds) ");
             }
 
-            if (sheetName != null) {
-                sql.append("    AND LOWER(sub_es.sheet_name) = LOWER(CAST(:sheetName AS TEXT)) ");
+            if (sheetNames != null) {
+                sql.append("    AND LOWER(sub_es.sheet_name) IN (:sheetNamesLower) ");
             }
 
             sql.append("    GROUP BY sub.excel_sheet_id, sub.row_number ");
@@ -133,7 +137,7 @@ public class ExcelCellRepositoryCustomImpl implements ExcelCellRepositoryCustom 
      * Build the count query with dynamic keyword count.
      * Handles NULL parameters by conditional SQL building instead of SQL-level NULL checks.
      */
-    private String buildCountQuery(List<String> keywords, Long fileId, String sheetName) {
+    private String buildCountQuery(List<String> keywords, List<Long> fileIds, List<String> sheetNames) {
         StringBuilder sql = new StringBuilder();
 
         sql.append("SELECT COUNT(*) FROM excel_cells ec ");
@@ -141,14 +145,14 @@ public class ExcelCellRepositoryCustomImpl implements ExcelCellRepositoryCustom 
         sql.append("JOIN excel_files ef ON es.excel_file_id = ef.id ");
         sql.append("WHERE ef.status = 'ACTIVE' ");
 
-        // Only add fileId filter if provided
-        if (fileId != null) {
-            sql.append("AND ef.id = :fileId ");
+        // Only add fileIds filter if provided (use IN clause for multiple values)
+        if (fileIds != null) {
+            sql.append("AND ef.id IN (:fileIds) ");
         }
 
-        // Only add sheetName filter if provided
-        if (sheetName != null) {
-            sql.append("AND LOWER(es.sheet_name) = LOWER(CAST(:sheetName AS TEXT)) ");
+        // Only add sheetNames filter if provided (use IN clause for multiple values, case-insensitive)
+        if (sheetNames != null) {
+            sql.append("AND LOWER(es.sheet_name) IN (:sheetNamesLower) ");
         }
 
         if (keywords.size() == 1) {
@@ -170,12 +174,12 @@ public class ExcelCellRepositoryCustomImpl implements ExcelCellRepositoryCustom 
             sql.append("    JOIN excel_files sub_ef ON sub_es.excel_file_id = sub_ef.id ");
             sql.append("    WHERE sub_ef.status = 'ACTIVE' ");
 
-            if (fileId != null) {
-                sql.append("    AND sub_ef.id = :fileId ");
+            if (fileIds != null) {
+                sql.append("    AND sub_ef.id IN (:fileIds) ");
             }
 
-            if (sheetName != null) {
-                sql.append("    AND LOWER(sub_es.sheet_name) = LOWER(CAST(:sheetName AS TEXT)) ");
+            if (sheetNames != null) {
+                sql.append("    AND LOWER(sub_es.sheet_name) IN (:sheetNamesLower) ");
             }
 
             sql.append("    GROUP BY sub.excel_sheet_id, sub.row_number ");
@@ -198,15 +202,18 @@ public class ExcelCellRepositoryCustomImpl implements ExcelCellRepositoryCustom 
      * Set query parameters for both main and count queries.
      * Only sets parameters that are actually used in the query (non-null filters).
      */
-    private void setQueryParameters(NativeQuery<?> query, Long fileId, String sheetName, List<String> keywords) {
-        // Only set fileId if it's used in the query
-        if (fileId != null) {
-            query.setParameter("fileId", fileId);
+    private void setQueryParameters(NativeQuery<?> query, List<Long> fileIds, List<String> sheetNames, List<String> keywords) {
+        // Only set fileIds if they're used in the query
+        if (fileIds != null) {
+            query.setParameterList("fileIds", fileIds);
         }
 
-        // Only set sheetName if it's used in the query
-        if (sheetName != null) {
-            query.setParameter("sheetName", sheetName);
+        // Only set sheetNames if they're used in the query (convert to lowercase for case-insensitive matching)
+        if (sheetNames != null) {
+            List<String> lowerSheetNames = sheetNames.stream()
+                    .map(String::toLowerCase)
+                    .toList();
+            query.setParameterList("sheetNamesLower", lowerSheetNames);
         }
 
         // Set keywords - always present

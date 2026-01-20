@@ -43,8 +43,8 @@ public class ExcelSearchService {
      */
     @Transactional(readOnly = true)
     public Page<ExcelCell> searchExcelData(ExcelSearchRequest request, Pageable pageable) {
-        log.info("Searching Excel data - keywords: {}, fileId: {}, sheetName: {}",
-                request.getKeywords(), request.getFileId(), request.getSheetName());
+        log.info("Searching Excel data - keywords: {}, fileIds: {}, sheetNames: {}",
+                request.getKeywords(), request.getFileIds(), request.getSheetNames());
 
         // Parse and validate keywords
         List<String> keywords = parseKeywords(request.getKeywords());
@@ -61,8 +61,8 @@ public class ExcelSearchService {
 
         // Execute search with dynamic keyword count
         Page<ExcelCell> results = excelCellRepository.searchWithDynamicKeywords(
-                request.getFileId(),
-                request.getSheetName(),
+                request.getFileIds(),
+                request.getSheetNames(),
                 keywords,
                 pageable
         );

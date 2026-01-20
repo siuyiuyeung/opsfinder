@@ -24,8 +24,8 @@ const uploadError = ref('')
 
 // Search
 const searchKeywords = ref('')
-const selectedFileFilter = ref<number | undefined>(undefined)
-const selectedSheetFilter = ref<string | undefined>(undefined)
+const selectedFileFilter = ref<number[]>([])
+const selectedSheetFilter = ref<string[]>([])
 const showSearchResults = ref(false)
 const expandedRows = ref<any[]>([])
 const availableSheets = ref<string[]>([])
@@ -141,12 +141,12 @@ const handleSearch = async () => {
 
   searchLoading.value = true
   try {
-    const filters: { fileId?: number; sheetName?: string } = {}
-    if (selectedFileFilter.value) {
-      filters.fileId = selectedFileFilter.value
+    const filters: { fileIds?: number[]; sheetNames?: string[] } = {}
+    if (selectedFileFilter.value.length > 0) {
+      filters.fileIds = selectedFileFilter.value
     }
-    if (selectedSheetFilter.value) {
-      filters.sheetName = selectedSheetFilter.value
+    if (selectedSheetFilter.value.length > 0) {
+      filters.sheetNames = selectedSheetFilter.value
     }
     const response = await excelService.searchExcelData(
       searchKeywords.value.trim(),
@@ -168,8 +168,8 @@ const handleSearch = async () => {
 
 const clearSearch = () => {
   searchKeywords.value = ''
-  selectedFileFilter.value = undefined
-  selectedSheetFilter.value = undefined
+  selectedFileFilter.value = []
+  selectedSheetFilter.value = []
   showSearchResults.value = false
   searchResults.value = []
   expandedRows.value = []
@@ -210,10 +210,20 @@ const handlePageChange = (page: number) => {
   loadFiles()
 }
 
-const loadSheetNames = async (fileId: number) => {
+const loadSheetNames = async (fileIds: number[]) => {
+  if (fileIds.length === 0) {
+    availableSheets.value = []
+    return
+  }
+
   try {
-    const fileDetails = await excelService.getExcelFileById(fileId)
-    availableSheets.value = fileDetails.sheets.map(sheet => sheet.sheetName)
+    // Load sheets from all selected files and combine them (deduplicated)
+    const allSheets = new Set<string>()
+    for (const fileId of fileIds) {
+      const fileDetails = await excelService.getExcelFileById(fileId)
+      fileDetails.sheets.forEach(sheet => allSheets.add(sheet.sheetName))
+    }
+    availableSheets.value = Array.from(allSheets).sort()
   } catch (error) {
     console.error('Failed to load sheet names:', error)
     availableSheets.value = []
@@ -221,14 +231,12 @@ const loadSheetNames = async (fileId: number) => {
 }
 
 // Watchers
-watch(selectedFileFilter, (newFileId) => {
-  selectedSheetFilter.value = undefined // Clear sheet filter when file changes
-  if (newFileId) {
-    loadSheetNames(newFileId)
-  } else {
-    availableSheets.value = []
-  }
-})
+watch(selectedFileFilter, (newFileIds) => {
+  // Keep only sheets that exist in the newly selected files
+  // For simplicity, clear sheet filter when file selection changes
+  selectedSheetFilter.value = []
+  loadSheetNames(newFileIds)
+}, { deep: true })
 
 // Lifecycle
 onMounted(() => {
@@ -278,18 +286,24 @@ onMounted(() => {
                   :items="files"
                   item-title="originalFilename"
                   item-value="id"
-                  label="Filter by File (optional)"
+                  label="Filter by Files (optional)"
                   clearable
+                  multiple
+                  chips
+                  closable-chips
                 ></v-select>
               </v-col>
               <v-col cols="12" md="3">
                 <v-select
                   v-model="selectedSheetFilter"
                   :items="availableSheets"
-                  label="Filter by Sheet (optional)"
+                  label="Filter by Sheets (optional)"
                   clearable
-                  :disabled="!selectedFileFilter"
-                  hint="Select a file first to filter by sheet"
+                  multiple
+                  chips
+                  closable-chips
+                  :disabled="selectedFileFilter.length === 0"
+                  hint="Select file(s) first to filter by sheet"
                   persistent-hint
                 ></v-select>
               </v-col>

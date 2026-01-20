@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.util.List;
 
 /**
  * REST controller for Excel file management and search operations.
@@ -118,12 +119,12 @@ public class ExcelFileController {
      * Search Excel data with multi-keyword AND logic at row level.
      * For multiple keywords, all must appear somewhere in the same row (across different cells).
      * Returns one result per row with all matched cells highlighted.
-     * Supports filtering by file ID and/or sheet name.
+     * Supports filtering by multiple file IDs and/or sheet names.
      * Accessible by all authenticated users.
      *
      * @param keywords comma-separated keywords (required)
-     * @param fileId optional file ID filter
-     * @param sheetName optional sheet name filter
+     * @param fileIds optional file ID filter (comma-separated for multiple)
+     * @param sheetNames optional sheet name filter (comma-separated for multiple)
      * @param page page number (0-indexed)
      * @param size page size
      * @return page of row-grouped search results
@@ -132,18 +133,18 @@ public class ExcelFileController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Page<ExcelRowSearchResult>> searchExcelData(
             @RequestParam String keywords,
-            @RequestParam(required = false) Long fileId,
-            @RequestParam(required = false) String sheetName,
+            @RequestParam(required = false) List<Long> fileIds,
+            @RequestParam(required = false) List<String> sheetNames,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        log.info("Search Excel data request - keywords: {}, fileId: {}, sheetName: {}, page: {}, size: {}",
-                keywords, fileId, sheetName, page, size);
+        log.info("Search Excel data request - keywords: {}, fileIds: {}, sheetNames: {}, page: {}, size: {}",
+                keywords, fileIds, sheetNames, page, size);
 
         ExcelSearchRequest request = ExcelSearchRequest.builder()
                 .keywords(keywords)
-                .fileId(fileId)
-                .sheetName(sheetName)
+                .fileIds(fileIds)
+                .sheetNames(sheetNames)
                 .build();
 
         Pageable pageable = PageRequest.of(page, size);
