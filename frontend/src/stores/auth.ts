@@ -13,6 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
   const refreshToken = ref<string | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const sessionExpired = ref(false)
 
   // Getters
   const isAuthenticated = computed(() => !!accessToken.value && !!user.value)
@@ -83,6 +84,9 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('refreshToken', response.refreshToken)
       localStorage.setItem('user', JSON.stringify(user.value))
 
+      // Clear session expired flag on successful login
+      sessionExpired.value = false
+
       return true
     } catch (err: any) {
       if (err.response?.status === 403) {
@@ -145,6 +149,28 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
   }
 
+  /**
+   * Set session expired flag.
+   */
+  function setSessionExpired(value: boolean) {
+    sessionExpired.value = value
+  }
+
+  /**
+   * Clear session without calling logout API.
+   * Used when session is already expired.
+   */
+  function clearSession() {
+    user.value = null
+    accessToken.value = null
+    refreshToken.value = null
+    error.value = null
+
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('user')
+  }
+
   // Initialize on store creation
   initializeAuth()
 
@@ -155,6 +181,7 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken,
     loading,
     error,
+    sessionExpired,
     // Getters
     isAuthenticated,
     userRole,
@@ -166,5 +193,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     refreshUser,
     clearError,
+    setSessionExpired,
+    clearSession,
   }
 })

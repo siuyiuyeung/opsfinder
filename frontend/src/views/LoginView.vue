@@ -35,6 +35,17 @@
                   />
 
                   <v-alert
+                    v-if="authStore.sessionExpired"
+                    type="warning"
+                    variant="tonal"
+                    closable
+                    @click:close="authStore.setSessionExpired(false)"
+                    class="mb-4"
+                  >
+                    Your session has expired. Please log in again to continue.
+                  </v-alert>
+
+                  <v-alert
                     v-if="authStore.error"
                     type="error"
                     variant="tonal"
