@@ -62,6 +62,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/UserManagementView.vue'),
     meta: { requiresAuth: true, requiresAdmin: true },
   },
+  {
+    path: '/key-management',
+    name: 'ApiKeyManagement',
+    component: () => import('@/views/ApiKeyManagementView.vue'),
+    meta: { requiresAuth: true, requiresAdmin: true },
+  },
 ]
 
 const router = createRouter({

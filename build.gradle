@@ -29,7 +29,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // Database
-    runtimeOnly 'org.postgresql:postgresql:42.7.4'
+    implementation 'org.postgresql:postgresql:42.7.4'
     implementation 'org.liquibase:liquibase-core:4.29.2'
 
     // Security - JWT

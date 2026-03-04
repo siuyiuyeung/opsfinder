@@ -1,0 +1,30 @@
+package com.igsl.opsfinder.config;
+
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import java.util.concurrent.Executor;
+
+/**
+ * Async and caching configuration.
+ * Enables Spring's @Async support with a dedicated thread pool for fire-and-forget tasks.
+ */
+@Configuration
+@EnableAsync
+@EnableCaching
+public class AsyncConfig {
+
+    @Bean(name = "apiKeyAsyncExecutor")
+    public Executor apiKeyAsyncExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(4);
+        executor.setQueueCapacity(500);
+        executor.setThreadNamePrefix("api-key-async-");
+        executor.initialize();
+        return executor;
+    }
+}

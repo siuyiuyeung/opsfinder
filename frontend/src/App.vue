@@ -22,6 +22,7 @@ const baseNavigationItems = [
 
 const adminNavigationItems = [
   { title: 'User Management', icon: 'mdi-account-group', to: '/users', adminOnly: true },
+  { title: 'API Keys', icon: 'mdi-key-variant', to: '/key-management', adminOnly: true },
 ]
 
 const navigationItems = computed(() => {

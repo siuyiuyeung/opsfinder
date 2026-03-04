@@ -372,4 +372,7 @@ OpsFinder/
 - Refer to the full plan details in this file for specific implementation steps
 - Update progress markers (✓, ⏳, ⏸️) as work progresses
 
-**Last Updated**: 2025-12-16
+- ✅ **X-API-Key authentication** — opaque token auth for external clients (CI pipelines, scripts); SHA-256 hash storage, per-key rate limiting (Caffeine), async usage logging, admin management UI at `/key-management` (2026-03-04)
+  - See: `docs/task/x-api-key-authentication.md`
+
+**Last Updated**: 2026-03-04

@@ -1,5 +1,6 @@
 package com.igsl.opsfinder.config;
 
+import com.igsl.opsfinder.security.ApiKeyAuthenticationFilter;
 import com.igsl.opsfinder.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +41,9 @@ public class SecurityConfig {
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
+    private ApiKeyAuthenticationFilter apiKeyAuthenticationFilter;
+
+    @Autowired
     private CorsProperties corsProperties;
 
     /**
@@ -67,11 +71,25 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/error"
                         ).permitAll()
+                        // Static frontend assets — must be public so the SPA can bootstrap
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/*.js",
+                                "/*.css",
+                                "/*.ico",
+                                "/*.png",
+                                "/*.svg",
+                                "/*.woff",
+                                "/*.woff2",
+                                "/assets/**"
+                        ).permitAll()
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiKeyAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
