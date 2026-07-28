@@ -4,6 +4,19 @@ import { excelService } from '@/services/excel.service'
 import { useAuthStore } from '@/stores/auth'
 import type { ExcelFile, ExcelRowSearchResult, ExcelFileDetail } from '@/types/excel'
 
+interface GroupColumn {
+  columnIndex: number
+  columnHeader: string
+}
+
+interface ResultGroup {
+  key: string
+  fileName: string
+  sheetName: string
+  rows: ExcelRowSearchResult[]
+  columns: GroupColumn[]
+}
+
 const authStore = useAuthStore()
 
 // State
@@ -27,7 +40,7 @@ const searchKeywords = ref('')
 const selectedFileFilter = ref<number[]>([])
 const selectedSheetFilter = ref<string[]>([])
 const showSearchResults = ref(false)
-const expandedRows = ref<any[]>([])
+const showAllColumns = ref(false)
 const availableSheets = ref<string[]>([])
 
 // File details
@@ -55,12 +68,46 @@ const headers = [
   { title: 'Actions', key: 'actions', sortable: false },
 ]
 
-const searchResultHeaders = [
-  { title: 'File', key: 'fileName', sortable: false },
-  { title: 'Sheet', key: 'sheetName', sortable: false },
-  { title: 'Row', key: 'rowNumber', sortable: false },
-  { title: 'Matched Values', key: 'matchedValues', sortable: false },
-]
+/**
+ * Group search results by file + sheet. Each group owns its own column set,
+ * since different sheets have different headers.
+ */
+const groupedResults = computed<ResultGroup[]>(() => {
+  const groups = new Map<string, ResultGroup>()
+
+  for (const row of searchResults.value) {
+    const key = `${row.fileId}_${row.sheetId}`
+    let group = groups.get(key)
+    if (!group) {
+      group = {
+        key,
+        fileName: row.fileName,
+        sheetName: row.sheetName,
+        rows: [],
+        columns: [],
+      }
+      groups.set(key, group)
+    }
+    group.rows.push(row)
+  }
+
+  // Build each group's column set from the union of its rows' cells
+  for (const group of groups.values()) {
+    const columns = new Map<number, string>()
+    for (const row of group.rows) {
+      for (const cell of row.rowData ?? []) {
+        if (!columns.has(cell.columnIndex)) {
+          columns.set(cell.columnIndex, cell.columnHeader)
+        }
+      }
+    }
+    group.columns = Array.from(columns.entries())
+      .map(([columnIndex, columnHeader]) => ({ columnIndex, columnHeader }))
+      .sort((a, b) => a.columnIndex - b.columnIndex)
+  }
+
+  return Array.from(groups.values())
+})
 
 // Methods
 const loadFiles = async () => {
@@ -155,8 +202,6 @@ const handleSearch = async () => {
       100
     )
     searchResults.value = response.content
-    console.log('Search results:', response.content)
-    console.log('First result rowData:', response.content[0]?.rowData)
     showSearchResults.value = true
   } catch (error: any) {
     console.error('Failed to search:', error)
@@ -172,7 +217,6 @@ const clearSearch = () => {
   selectedSheetFilter.value = []
   showSearchResults.value = false
   searchResults.value = []
-  expandedRows.value = []
 }
 
 const viewFileDetails = async (fileId: number) => {
@@ -201,8 +245,17 @@ const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleString()
 }
 
-const getRowKey = (item: ExcelRowSearchResult): string => {
-  return `${item.sheetId}_${item.rowNumber}`
+const truncate = (value: string, max = 50): string => {
+  if (!value) return ''
+  return value.length > max ? value.substring(0, max) + '...' : value
+}
+
+/**
+ * Look up a row's cell by column index. Returns undefined when the row has no
+ * cell at that position (sparse rows within a group).
+ */
+const cellAt = (row: ExcelRowSearchResult, columnIndex: number) => {
+  return row.rowData?.find(cell => cell.columnIndex === columnIndex)
 }
 
 const handlePageChange = (page: number) => {
@@ -316,96 +369,109 @@ onMounted(() => {
 
             <!-- Search Results -->
             <v-card v-if="showSearchResults" class="mb-4" elevation="2">
-              <v-card-title class="bg-primary text-white">
-                Search Results ({{ searchResults.length }} found)
+              <v-card-title class="bg-primary text-white d-flex align-center">
+                <span>Search Results ({{ searchResults.length }} found)</span>
                 <v-spacer></v-spacer>
+                <v-switch
+                  v-model="showAllColumns"
+                  label="Show all columns"
+                  color="white"
+                  density="compact"
+                  hide-details
+                  class="mr-4 flex-grow-0"
+                ></v-switch>
                 <v-btn icon size="small" @click="clearSearch">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
               </v-card-title>
               <v-card-text>
-                <v-data-table
-                  :headers="searchResultHeaders"
-                  :items="searchResults"
-                  :items-per-page="10"
-                  density="compact"
-                  show-expand
-                  v-model:expanded="expandedRows"
-                  :item-value="getRowKey"
+                <div
+                  v-for="group in groupedResults"
+                  :key="group.key"
+                  class="mb-6"
                 >
-                  <template v-slot:item.matchedValues="{ item }">
-                    <div class="d-flex flex-wrap gap-1">
-                      <v-chip
-                        v-for="(value, index) in item.matchedValues.slice(0, 3)"
-                        :key="index"
-                        size="small"
-                        color="primary"
-                        variant="tonal"
-                      >
-                        {{ value.length > 30 ? value.substring(0, 30) + '...' : value }}
-                      </v-chip>
-                      <v-chip
-                        v-if="item.matchedValues.length > 3"
-                        size="small"
-                        color="grey"
-                        variant="tonal"
-                      >
-                        +{{ item.matchedValues.length - 3 }} more
-                      </v-chip>
-                    </div>
-                  </template>
+                  <div class="d-flex align-center mb-2">
+                    <v-icon color="info" size="small" class="mr-2">mdi-file-excel</v-icon>
+                    <span class="font-weight-medium">{{ group.fileName }}</span>
+                    <span class="mx-1 text-grey">/</span>
+                    <span class="text-primary">{{ group.sheetName }}</span>
+                    <span class="ml-2 text-caption text-grey">
+                      ({{ group.rows.length }} {{ group.rows.length === 1 ? 'row' : 'rows' }})
+                    </span>
+                  </div>
 
-                  <template v-slot:expanded-row="{ columns, item }">
-                    <tr>
-                      <td :colspan="columns.length" class="pa-4 bg-grey-lighten-5">
-                        <v-card flat v-if="item.rowData && item.rowData.length > 0">
-                          <v-card-title class="text-subtitle-1">
-                            <v-icon class="mr-2" color="info">mdi-table-row</v-icon>
-                            Full Row Data (Row {{ item.rowNumber }})
-                          </v-card-title>
-                          <v-card-text>
-                            <v-table density="compact">
-                              <thead>
-                                <tr>
-                                  <th class="text-left">Column</th>
-                                  <th class="text-left">Header</th>
-                                  <th class="text-left">Value</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr
-                                  v-for="cell in item.rowData"
-                                  :key="cell.columnIndex"
-                                  :class="{ 'bg-yellow-lighten-4': cell.isMatchedCell }"
-                                >
-                                  <td class="font-weight-medium">{{ cell.columnIndex + 1 }}</td>
-                                  <td class="text-primary">{{ cell.columnHeader || '(no header)' }}</td>
-                                  <td>{{ cell.cellValue || '(empty)' }}</td>
-                                </tr>
-                              </tbody>
-                            </v-table>
-                            <v-alert
-                              v-if="item.rowData.filter(c => c.isMatchedCell).length > 0"
-                              type="info"
-                              variant="tonal"
-                              density="compact"
-                              class="mt-2"
+                  <div class="result-table-wrapper">
+                    <v-table density="compact">
+                      <thead>
+                        <tr>
+                          <th class="text-left">Row</th>
+                          <template v-if="showAllColumns">
+                            <th
+                              v-for="column in group.columns"
+                              :key="column.columnIndex"
+                              class="text-left"
                             >
-                              <v-icon icon="mdi-information" size="small" class="mr-2"></v-icon>
-                              {{ item.rowData.filter(c => c.isMatchedCell).length }} matched cell(s) highlighted in yellow
-                            </v-alert>
-                          </v-card-text>
-                        </v-card>
-                        <v-alert v-else type="warning" variant="tonal">
-                          <div>Debug Info:</div>
-                          <div>rowData exists: {{ !!item.rowData }}</div>
-                          <div>rowData length: {{ item.rowData?.length || 0 }}</div>
-                          <div>Full item: {{ JSON.stringify(item, null, 2) }}</div>
-                        </v-alert>
-                      </td>
-                    </tr>
-                  </template>
-                </v-data-table>
+                              {{ column.columnHeader || '(no header)' }}
+                            </th>
+                          </template>
+                          <th v-else class="text-left">Matched Values</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="row in group.rows" :key="row.rowNumber">
+                          <td class="font-weight-medium">{{ row.rowNumber }}</td>
+
+                          <template v-if="showAllColumns">
+                            <td
+                              v-for="column in group.columns"
+                              :key="column.columnIndex"
+                              :class="{ 'bg-yellow-lighten-4': cellAt(row, column.columnIndex)?.isMatchedCell }"
+                              :title="cellAt(row, column.columnIndex)?.cellValue || ''"
+                            >
+                              {{ truncate(cellAt(row, column.columnIndex)?.cellValue || '') || '—' }}
+                            </td>
+                          </template>
+
+                          <td v-else>
+                            <div class="d-flex flex-wrap gap-1">
+                              <v-chip
+                                v-for="(value, index) in row.matchedValues.slice(0, 3)"
+                                :key="index"
+                                size="small"
+                                color="primary"
+                                variant="tonal"
+                              >
+                                {{ truncate(value, 30) }}
+                              </v-chip>
+                              <v-chip
+                                v-if="row.matchedValues.length > 3"
+                                size="small"
+                                color="grey"
+                                variant="tonal"
+                              >
+                                +{{ row.matchedValues.length - 3 }} more
+                              </v-chip>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </v-table>
+                  </div>
+                </div>
+
+                <div v-if="groupedResults.length === 0" class="text-center pa-4 text-grey">
+                  No matching rows found
+                </div>
+
+                <v-alert
+                  v-else-if="showAllColumns"
+                  type="info"
+                  variant="tonal"
+                  density="compact"
+                >
+                  <v-icon icon="mdi-information" size="small" class="mr-2"></v-icon>
+                  Matched cells are highlighted in yellow
+                </v-alert>
               </v-card-text>
             </v-card>
 
@@ -589,5 +655,17 @@ onMounted(() => {
 <style scoped>
 .argon-card {
   box-shadow: 0 0 2rem 0 rgba(136, 152, 170, 0.15);
+}
+
+/* Wide sheets scroll horizontally instead of forcing the page to */
+.result-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+}
+
+.result-table-wrapper :deep(td),
+.result-table-wrapper :deep(th) {
+  white-space: nowrap;
 }
 </style>

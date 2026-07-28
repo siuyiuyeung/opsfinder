@@ -379,4 +379,7 @@ OpsFinder/
   - See: `docs/task/fix-expired-token-401.md`
   - Note: integration tests still blocked by the pre-existing `contextLoads` failure (`@SpringBootTest` requires a live PostgreSQL; no H2 test profile exists)
 
+- ✅ **Excel search results grouped with full-detail toggle** — search results now group by file + sheet instead of repeating File/Sheet on every row. A "Show all columns" switch expands each group into the sheet's full column set, rendering every result as one horizontal row with matched cells highlighted. Replaces the per-row expand chevron, which showed the same data stacked vertically one cell at a time (2026-07-28)
+  - See: `docs/task/excel-search-grouped-detail-view.md`
+
 **Last Updated**: 2026-07-28
