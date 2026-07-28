@@ -375,4 +375,8 @@ OpsFinder/
 - ✅ **X-API-Key authentication** — opaque token auth for external clients (CI pipelines, scripts); SHA-256 hash storage, per-key rate limiting (Caffeine), async usage logging, admin management UI at `/key-management` (2026-03-04)
   - See: `docs/task/x-api-key-authentication.md`
 
-**Last Updated**: 2026-03-04
+- ✅ **Fix expired token returning 403 instead of 401** — expired JWTs hit Spring Security's default `Http403ForbiddenEntryPoint`, so the frontend interceptor ignored them and failed silently instead of refreshing or logging out. Added `JwtAuthenticationEntryPoint` (401) and `RestAccessDeniedHandler` (403), wired via `exceptionHandling`, and reduced the frontend `isAuthError` check to `status === 401` (2026-07-28)
+  - See: `docs/task/fix-expired-token-401.md`
+  - Note: integration tests still blocked by the pre-existing `contextLoads` failure (`@SpringBootTest` requires a live PostgreSQL; no H2 test profile exists)
+
+**Last Updated**: 2026-07-28

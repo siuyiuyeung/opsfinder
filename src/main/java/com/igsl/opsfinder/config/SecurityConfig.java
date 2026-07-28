@@ -1,7 +1,9 @@
 package com.igsl.opsfinder.config;
 
 import com.igsl.opsfinder.security.ApiKeyAuthenticationFilter;
+import com.igsl.opsfinder.security.JwtAuthenticationEntryPoint;
 import com.igsl.opsfinder.security.JwtAuthenticationFilter;
+import com.igsl.opsfinder.security.RestAccessDeniedHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,6 +48,12 @@ public class SecurityConfig {
     @Autowired
     private CorsProperties corsProperties;
 
+    @Autowired
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @Autowired
+    private RestAccessDeniedHandler restAccessDeniedHandler;
+
     /**
      * Configure security filter chain.
      *
@@ -60,6 +68,11 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // 401 when credentials are missing/invalid/expired, 403 when authenticated
+                // but not permitted. Without this Spring defaults to 403 for both.
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(restAccessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints (no authentication required)
                         .requestMatchers(

@@ -66,19 +66,12 @@ api.interceptors.request.use(
 
 /**
  * Check if error is an authentication/session error.
- * 401: Token invalid/expired
- * 403: No token or session issue (when no auth header sent)
+ *
+ * 401: credentials missing, invalid, or expired -> refresh, else log out.
+ * 403: authenticated but not permitted -> surface to the caller, never log out.
  */
 function isAuthError(error: any): boolean {
-  const status = error.response?.status
-  if (status === 401) return true
-
-  // 403 with no token in localStorage indicates session issue
-  if (status === 403 && !localStorage.getItem('accessToken')) {
-    return true
-  }
-
-  return false
+  return error.response?.status === 401
 }
 
 /**
@@ -91,7 +84,7 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config
 
-    // Handle authentication errors (401 or 403 with no token)
+    // Handle authentication errors (401)
     if (isAuthError(error) && !originalRequest._retry) {
       // If already refreshing, queue this request
       if (isRefreshing) {
