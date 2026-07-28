@@ -108,3 +108,42 @@ cell text available via the `title` attribute.
   `vite.config.ts`, and `ExcelFileView.vue:130` (`handleFileSelect`, untouched
   by this task). No error originates from the new code.
 - Not exercised in a running browser — no local runtime environment available.
+
+## Follow-up: two defects found in production testing
+
+**1. Matched cells never highlighted (pre-existing backend bug)**
+
+`RowCellData.isMatchedCell` is a primitive `boolean`, so Lombok generates the
+getter `isMatchedCell()`. Jackson strips the `is` prefix when deriving a bean
+property name, so the field serialized as `matchedCell`:
+
+```json
+{"columnHeader":"SERVICE","columnIndex":4,"cellValue":"Email Agent","matchedCell":true}
+```
+
+The frontend reads `isMatchedCell`, which was therefore always `undefined` —
+no cell ever highlighted. This predates the grouped view; the old expand-row
+table had the same bug, it was just less visible.
+
+Fixed at the source with `@JsonProperty("isMatchedCell")` on the field, which
+matches what both `frontend/src/types/excel.ts` and `docs/openapi.yaml`
+already specify. Guarded by
+`src/test/java/com/igsl/opsfinder/dto/excel/RowCellDataSerializationTest.java`,
+which fails without the annotation.
+
+A grep of `src/main/java/com/igsl/opsfinder/dto` confirms `RowCellData` is the
+only DTO with a `private boolean isXxx` field, so no other endpoint is
+affected.
+
+**2. Duplicate info icon**
+
+`v-alert type="info"` renders its own leading icon, and the template added a
+second `<v-icon icon="mdi-information">` inside it. Removed the explicit one.
+
+**Verification of follow-up**
+
+- `./gradlew test --tests "*RowCellDataSerializationTest"` — fails before the
+  annotation, passes after.
+- `npm run build` — passes (`✓ built in 6.60s`).
+- Compile warnings are pre-existing (`AuthResponse` `@Builder.Default`,
+  `ExcelFileMapper` unmapped `rowData`), unrelated to this change.

@@ -1,5 +1,6 @@
 package com.igsl.opsfinder.dto.excel;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,5 +19,8 @@ public class RowCellData {
     private String columnHeader;
     private Integer columnIndex;
     private String cellValue;
+    // Lombok's getter is isMatchedCell(); Jackson would strip the "is" prefix and
+    // serialize this as "matchedCell", which the frontend does not read.
+    @JsonProperty("isMatchedCell")
     private boolean isMatchedCell; // Indicates if this is the cell that matched the search
 }

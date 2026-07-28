@@ -469,7 +469,6 @@ onMounted(() => {
                   variant="tonal"
                   density="compact"
                 >
-                  <v-icon icon="mdi-information" size="small" class="mr-2"></v-icon>
                   Matched cells are highlighted in yellow
                 </v-alert>
               </v-card-text>
