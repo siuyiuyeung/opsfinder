@@ -75,6 +75,8 @@ or service changes — `ExcelRowSearchResult.rowData` already carried everything
 
 - `GroupColumn` / `ResultGroup` local interfaces.
 - `showAllColumns` ref, bound to a `v-switch` in the Search Results title bar.
+  Defaults to `true` — the full-column view is the more useful landing state,
+  and the switch is there to collapse back to matched values only.
 - `groupedResults` computed: buckets results by `fileId_sheetId`, then builds
   each group's column set from the union of its rows' `columnIndex` values,
   sorted ascending. Sparse rows are handled by `cellAt()`, which returns

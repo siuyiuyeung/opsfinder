@@ -40,7 +40,7 @@ const searchKeywords = ref('')
 const selectedFileFilter = ref<number[]>([])
 const selectedSheetFilter = ref<string[]>([])
 const showSearchResults = ref(false)
-const showAllColumns = ref(false)
+const showAllColumns = ref(true)
 const availableSheets = ref<string[]>([])
 
 // File details
